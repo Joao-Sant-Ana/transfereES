@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Search, TrendingUp, Building2, Users, Wallet, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, Filter } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
+import { getFotoParlamentar } from '../utils/deputyPhotos';
 
 export default function PaginaInicial({
   dados,
@@ -672,13 +673,25 @@ export default function PaginaInicial({
                       })
                       .map(pl => pl.nome_beneficiario)
                   ).size;
+                  const fotoUrl = getFotoParlamentar(p.nome);
                   return (
                     <div
                       key={p.nome}
                       onClick={() => onParlamentar(p)}
                       className={'p-4 cursor-pointer hover:bg-indigo-50/50 flex items-center gap-3 group ' + (i < parlF.length - 1 ? 'border-b border-slate-50' : '')}
                     >
-                      <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-sm">
+                      {fotoUrl ? (
+                        <img
+                          src={fotoUrl}
+                          alt={p.nome}
+                          className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0"
+                          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
+                        />
+                      ) : null}
+                      <div
+                        className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-sm flex-shrink-0"
+                        style={fotoUrl ? { display: 'none' } : undefined}
+                      >
                         <Users className="w-4 h-4 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
