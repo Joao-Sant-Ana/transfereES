@@ -5,6 +5,7 @@ import { BtnVoltar, Loading } from '../components/ui';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
 import { getSituacaoTrabalho } from '../utils/helpers';
 import { fetchEnteCompleto } from '../services/api';
+import { getFotoParlamentar } from '../utils/deputyPhotos';
 
 export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somenteEfetivadas, onVoltar, onExec }) {
   const [ano, setAno] = useState(anoInicial || null);
@@ -125,7 +126,18 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
         <BtnVoltar onClick={onVoltar} texto="Voltar à visão geral" />
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-sm">
+            {getFotoParlamentar(parl.nome) ? (
+              <img
+                src={getFotoParlamentar(parl.nome)}
+                alt={parl.nome}
+                className="w-16 h-16 rounded-2xl object-cover shadow-sm"
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
+              />
+            ) : null}
+            <div
+              className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-sm"
+              style={getFotoParlamentar(parl.nome) ? { display: 'none' } : undefined}
+            >
               <Users className="w-8 h-8 text-white" />
             </div>
             <div>
