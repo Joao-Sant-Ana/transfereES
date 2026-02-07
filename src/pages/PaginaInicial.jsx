@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, TrendingUp, Building2, Users, Wallet, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, Filter } from 'lucide-react';
+import { Search, TrendingUp, Building2, Users, Wallet, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, Filter, MapPin, FileText } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
 import { getFotoParlamentar } from '../utils/deputyPhotos';
@@ -42,9 +42,6 @@ export default function PaginaInicial({
 
   const anos = Object.keys(porAno).sort();
 
-  // Calcular valores baseados no filtro de ano e toggle
-  // somenteEfetivadas = true → mostra valores liberados (OBs)
-  // somenteEfetivadas = false → mostra valores planejados (empenhados)
   const dadosFiltrados = useMemo(() => {
     const useLiberado = somenteEfetivadas;
 
@@ -71,16 +68,13 @@ export default function PaginaInicial({
     };
   }, [anoFiltro, somenteEfetivadas, porAno, porAnoEstado, porAnoMunicipios, porAnoEfetivado, porAnoEstadoEfetivado, porAnoMunicipiosEfetivado, totalGeral, totalEstado, totalMunicipios, totalGeralEfetivado, totalEstadoEfetivado, totalMunicipiosEfetivado, anos]);
 
-  // Calcular valor de um ente baseado nos filtros
   const calcularValorEnte = (ente) => {
     if (somenteEfetivadas) {
-      // Usar valores efetivados
       if (anoFiltro) {
         return ente.anosEfetivados?.[parseInt(anoFiltro)] || 0;
       }
       return Object.values(ente.anosEfetivados || {}).reduce((a, b) => a + b, 0);
     } else {
-      // Usar valores empenhados
       if (anoFiltro) {
         return ente.anos[parseInt(anoFiltro)] || 0;
       }
@@ -88,7 +82,6 @@ export default function PaginaInicial({
     }
   };
 
-  // Calcular valor de um parlamentar baseado nos filtros
   const calcularValorParlamentar = (p) => {
     if (somenteEfetivadas) {
       if (anoFiltro) {
@@ -103,7 +96,6 @@ export default function PaginaInicial({
     }
   };
 
-  // Filtrar e contar planos com os filtros aplicados
   const contarPlanosFiltrados = (planos) => {
     let lista = planos;
     if (anoFiltro) {
@@ -118,11 +110,9 @@ export default function PaginaInicial({
     return lista.length;
   };
 
-  // Filtrar entes por ano, área e valor
   const muniF = useMemo(() => {
     let lista = municipios;
 
-    // Filtrar por ano
     if (anoFiltro) {
       const anoNum = parseInt(anoFiltro);
       lista = lista.filter(m => {
@@ -132,14 +122,12 @@ export default function PaginaInicial({
         return m.anos[anoNum] && m.anos[anoNum] > 0;
       });
     } else if (somenteEfetivadas) {
-      // Sem filtro de ano, mas com filtro de efetivadas
       lista = lista.filter(m => {
         const totalEfetivado = Object.values(m.anosEfetivados || {}).reduce((a, b) => a + b, 0);
         return totalEfetivado > 0;
       });
     }
 
-    // Filtrar por área
     if (areaFiltro) {
       lista = lista.filter(m =>
         m.planos.some(p => {
@@ -151,22 +139,18 @@ export default function PaginaInicial({
       );
     }
 
-    // Filtrar por busca
     if (buscaE) {
       lista = lista.filter(m => m.nome.toLowerCase().includes(buscaE.toLowerCase()));
     }
 
-    // Ordenar por valor
     lista = [...lista].sort((a, b) => calcularValorEnte(b) - calcularValorEnte(a));
 
     return lista;
   }, [municipios, anoFiltro, areaFiltro, somenteEfetivadas, buscaE]);
 
-  // Filtrar parlamentares
   const parlF = useMemo(() => {
     let lista = parlamentares;
 
-    // Filtrar por ano
     if (anoFiltro) {
       const anoNum = parseInt(anoFiltro);
       lista = lista.filter(p => {
@@ -179,7 +163,6 @@ export default function PaginaInicial({
       lista = lista.filter(p => (p.totalEfetivado || 0) > 0);
     }
 
-    // Filtrar por área
     if (areaFiltro) {
       lista = lista.filter(p =>
         p.planos.some(pl => {
@@ -191,18 +174,15 @@ export default function PaginaInicial({
       );
     }
 
-    // Filtrar por busca
     if (buscaP) {
       lista = lista.filter(p => p.nome.toLowerCase().includes(buscaP.toLowerCase()));
     }
 
-    // Ordenar por valor
     lista = [...lista].sort((a, b) => calcularValorParlamentar(b) - calcularValorParlamentar(a));
 
     return lista;
   }, [parlamentares, anoFiltro, areaFiltro, somenteEfetivadas, buscaP]);
 
-  // Verificar se estado tem dados com os filtros aplicados
   const estadoVisivel = useMemo(() => {
     if (!estado) return false;
 
@@ -221,18 +201,15 @@ export default function PaginaInicial({
     return true;
   }, [estado, anoFiltro, areaFiltro, somenteEfetivadas]);
 
-  // Dados para gráfico de áreas - atualiza com ano selecionado e toggle efetivadas
   const dadosArea = useMemo(() => {
     let areaData;
     if (somenteEfetivadas) {
-      // Usar dados efetivados
       if (anoFiltro && porAreaPorAnoEfetivado) {
         areaData = porAreaPorAnoEfetivado[parseInt(anoFiltro)] || {};
       } else {
         areaData = porAreaEfetivado || {};
       }
     } else {
-      // Usar dados empenhados (planejados)
       if (anoFiltro && porAreaPorAno) {
         areaData = porAreaPorAno[parseInt(anoFiltro)] || {};
       } else {
@@ -260,7 +237,6 @@ export default function PaginaInicial({
     return { ini, fim: ac, cor: cores[i]?.f || '#94a3b8' };
   });
 
-  // Calcular max para o gráfico de barras - usa dados corretos baseado no toggle
   const maxAno = useMemo(() => {
     if (somenteEfetivadas) {
       return Math.max(...anos.map(a => porAnoEfetivado?.[a] || 0), 1);
@@ -268,7 +244,6 @@ export default function PaginaInicial({
     return Math.max(...anos.map(a => porAno[a] || 0), 1);
   }, [anos, porAno, porAnoEfetivado, somenteEfetivadas]);
 
-  // Gerar label de filtros ativos para os boxes
   const gerarLabelFiltros = () => {
     const partes = [];
     if (anoFiltro) partes.push(anoFiltro);
@@ -279,108 +254,134 @@ export default function PaginaInicial({
   const labelFiltros = gerarLabelFiltros();
 
   return (
-    <div className="space-y-6">
-      {/* LINHA 1: 3 KPIs */}
-      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 40%', minWidth: '280px' }}>
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-800 via-slate-900 to-cyan-900 p-5 shadow-xl h-full">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-teal-500/20 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/4" />
-            <div className="relative">
-              <div className="flex items-start justify-between mb-1">
-                <div>
-                  <p className="text-slate-400 text-sm">
-                    Total {somenteEfetivadas ? 'Liberado' : 'Planejado'} ({dadosFiltrados.labelPeriodo})
-                  </p>
-                  {/* Toggle para alternar entre liberado e planejado */}
-                  <button
-                    onClick={() => onEfetivadosChange && onEfetivadosChange(!somenteEfetivadas)}
-                    className="flex items-center gap-1.5 mt-1 text-xs text-slate-500 hover:text-teal-400 transition-colors"
-                  >
-                    {somenteEfetivadas ? (
-                      <ToggleRight className="w-5 h-5 text-teal-400" />
-                    ) : (
-                      <ToggleLeft className="w-5 h-5 text-slate-500" />
-                    )}
-                    <span>{somenteEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
-                  </button>
-                </div>
-                <div className="p-2 bg-white/10 rounded-xl">
-                  <Wallet className="w-4 h-4 text-teal-400" />
-                </div>
+    <div className="space-y-8 animate-fade-in">
+      {/* HERO - Total Liberado Card */}
+      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8" style={{
+        background: 'linear-gradient(135deg, #0f766e 0%, #115e59 40%, #134e4a 70%, #0c4a6e 100%)',
+        boxShadow: '0 20px 40px -10px rgba(13, 78, 74, 0.3)'
+      }}>
+        {/* Decorative elements */}
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <svg className="absolute -top-10 -right-10 w-72 h-72 opacity-10" viewBox="0 0 300 300" fill="none">
+            <circle cx="150" cy="150" r="140" stroke="url(#heroGrad)" strokeWidth="2" fill="none" />
+            <circle cx="150" cy="150" r="100" stroke="url(#heroGrad)" strokeWidth="1.5" fill="none" opacity="0.5" />
+            <circle cx="150" cy="150" r="60" stroke="url(#heroGrad)" strokeWidth="1" fill="none" opacity="0.3" />
+            <defs>
+              <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#5eead4" />
+                <stop offset="100%" stopColor="#22d3ee" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div className="absolute top-4 left-[15%] w-2 h-2 bg-teal-300/20 rounded-full" />
+          <div className="absolute bottom-6 right-[25%] w-3 h-3 bg-cyan-300/15 rounded-full" />
+        </div>
+
+        <div className="relative">
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
+            <div>
+              <p className="text-teal-200/70 text-sm font-medium mb-1">
+                Total {somenteEfetivadas ? 'Liberado' : 'Planejado'} ({dadosFiltrados.labelPeriodo})
+              </p>
+              <p className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight animate-fade-in-up">
+                {formatarMoeda(dadosFiltrados.total)}
+              </p>
+            </div>
+            <button
+              onClick={() => onEfetivadosChange && onEfetivadosChange(!somenteEfetivadas)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
+              aria-label={somenteEfetivadas ? 'Alternar para valores planejados' : 'Alternar para valores liberados'}
+            >
+              {somenteEfetivadas ? (
+                <ToggleRight className="w-5 h-5 text-teal-300" />
+              ) : (
+                <ToggleLeft className="w-5 h-5 text-slate-400" />
+              )}
+              <span>{somenteEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-6 pt-4 mt-4 border-t border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-slate-300/60" />
+              <div>
+                <p className="text-teal-200/50 text-xs">Estado</p>
+                <p className="text-white text-lg font-bold">{formatarMoedaCompacta(dadosFiltrados.totalEst)}</p>
               </div>
-              <p className="text-3xl font-bold text-white tracking-tight mb-2">{formatarMoeda(dadosFiltrados.total)}</p>
-              <div className="flex gap-4 pt-3 border-t border-white/10">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
-                  <div>
-                    <p className="text-slate-500 text-xs">Estado</p>
-                    <p className="text-white text-sm font-semibold">{formatarMoedaCompacta(dadosFiltrados.totalEst)}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-teal-400" />
-                  <div>
-                    <p className="text-slate-500 text-xs">Municípios</p>
-                    <p className="text-white text-sm font-semibold">{formatarMoedaCompacta(dadosFiltrados.totalMun)}</p>
-                  </div>
-                </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-teal-400" />
+              <div>
+                <p className="text-teal-200/50 text-xs">Municipios</p>
+                <p className="text-white text-lg font-bold">{formatarMoedaCompacta(dadosFiltrados.totalMun)}</p>
               </div>
             </div>
           </div>
         </div>
-        <div style={{ flex: '1 1 28%', minWidth: '180px' }}>
-          <Card className="p-5 h-full">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-slate-500 text-sm">Entes Beneficiados</p>
-                <p className="text-3xl font-bold text-slate-800 mt-1">
-                  {muniF.length + (estadoVisivel ? 1 : 0)}
-                </p>
-                <p className="text-slate-400 text-sm mt-1">
-                  {estadoVisivel ? '1 Estado + ' : ''}{muniF.length} municípios
-                </p>
-              </div>
-              <div className="p-2.5 bg-slate-100 rounded-xl">
-                <Building2 className="w-5 h-5 text-slate-500" />
-              </div>
-            </div>
-          </Card>
-        </div>
-        <div style={{ flex: '1 1 28%', minWidth: '180px' }}>
-          <Card className="p-5 h-full">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-slate-500 text-sm">Parlamentares</p>
-                <p className="text-3xl font-bold text-slate-800 mt-1">{parlF.length}</p>
-                <p className="text-slate-400 text-sm mt-1">
-                  {anoFiltro ? `Em ${anoFiltro}` : 'Total acumulado'}
-                </p>
-              </div>
-              <div className="p-2.5 bg-slate-100 rounded-xl">
-                <Users className="w-5 h-5 text-slate-500" />
-              </div>
-            </div>
-          </Card>
-        </div>
       </div>
 
-      {/* LINHA 2: 2 Gráficos */}
-      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 58%', minWidth: '340px' }}>
+      {/* KPI Cards Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card hover className="p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-slate-500 text-sm font-medium">Entes Beneficiados</p>
+              <p className="text-3xl font-extrabold text-slate-800 mt-1 tracking-tight">
+                {muniF.length + (estadoVisivel ? 1 : 0)}
+              </p>
+              <p className="text-slate-400 text-sm mt-1">
+                {estadoVisivel ? '1 estado + ' : ''}{muniF.length} municipios
+              </p>
+            </div>
+            <div className="p-3 bg-teal-50 rounded-xl">
+              <MapPin className="w-5 h-5 text-teal-600" />
+            </div>
+          </div>
+        </Card>
+        <Card hover className="p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-slate-500 text-sm font-medium">Parlamentares</p>
+              <p className="text-3xl font-extrabold text-slate-800 mt-1 tracking-tight">{parlF.length}</p>
+              <p className="text-slate-400 text-sm mt-1">
+                {anoFiltro ? `Em ${anoFiltro}` : 'Total acumulado'}
+              </p>
+            </div>
+            <div className="p-3 bg-indigo-50 rounded-xl">
+              <Users className="w-5 h-5 text-indigo-600" />
+            </div>
+          </div>
+        </Card>
+        <Card hover className="p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-slate-500 text-sm font-medium">Demandas</p>
+              <p className="text-3xl font-extrabold text-slate-800 mt-1 tracking-tight">
+                {dados.totalPlanos || parlamentares.reduce((acc, p) => acc + p.planos.length, 0)}
+              </p>
+              <p className="text-slate-400 text-sm mt-1">Planos de acao</p>
+            </div>
+            <div className="p-3 bg-amber-50 rounded-xl">
+              <FileText className="w-5 h-5 text-amber-600" />
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Bar Chart - Year Distribution */}
+        <div className="lg:col-span-3">
           <Card className="p-6 h-full">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-slate-800">Por Ano</h3>
                 <TrendingUp className="w-5 h-5 text-teal-500" />
+                <h3 className="text-lg font-bold text-slate-800">Por Ano</h3>
               </div>
-              {/* Filtro de Anos */}
               <div className="flex gap-1.5 flex-wrap">
                 <button
                   onClick={() => onAnoChange(null)}
-                  className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-all ${
-                    !anoFiltro
-                      ? 'bg-teal-500 text-white shadow-md'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  className={`filter-chip px-3 py-1.5 text-sm rounded-lg font-medium ${
+                    !anoFiltro ? 'filter-chip-active' : 'bg-slate-100 text-slate-600'
                   }`}
                 >
                   Todos
@@ -389,10 +390,8 @@ export default function PaginaInicial({
                   <button
                     key={a}
                     onClick={() => onAnoChange(a)}
-                    className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-all ${
-                      anoFiltro === a
-                        ? 'bg-teal-500 text-white shadow-md'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    className={`filter-chip px-3 py-1.5 text-sm rounded-lg font-medium ${
+                      anoFiltro === a ? 'filter-chip-active' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
                     {a}
@@ -401,22 +400,19 @@ export default function PaginaInicial({
               </div>
             </div>
 
-            {/* Legenda */}
-            <div className="flex gap-4 mb-4">
+            <div className="flex gap-4 mb-5">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded bg-slate-400" />
-                <span className="text-xs text-slate-600">Estado</span>
+                <span className="text-xs text-slate-500">Estado</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-teal-500" />
-                <span className="text-xs text-slate-600">Municípios</span>
+                <div className="w-3 h-3 rounded" style={{ background: 'linear-gradient(90deg, #0d9488, #06b6d4)' }} />
+                <span className="text-xs text-slate-500">Municipios</span>
               </div>
             </div>
 
-            {/* Gráfico de Barras Empilhadas */}
             <div className="space-y-3">
               {anos.map(ano => {
-                // Usar valores efetivados ou empenhados baseado no toggle
                 const vEstado = somenteEfetivadas
                   ? (porAnoEstadoEfetivado?.[ano] || 0)
                   : (porAnoEstado?.[ano] || 0);
@@ -433,29 +429,33 @@ export default function PaginaInicial({
                   <div
                     key={ano}
                     onClick={() => onAnoChange(anoFiltro === ano ? null : ano)}
-                    className={`cursor-pointer transition-all rounded-lg p-2 -mx-2 ${
-                      isSelected ? 'bg-teal-50 ring-2 ring-teal-500' : 'hover:bg-slate-50'
+                    className={`cursor-pointer transition-all rounded-xl p-2.5 -mx-2.5 ${
+                      isSelected ? 'bg-teal-50 ring-2 ring-teal-400' : 'hover:bg-slate-50'
                     }`}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Ano ${ano}: ${formatarMoedaCompacta(vTotal)}`}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onAnoChange(anoFiltro === ano ? null : ano); } }}
                   >
                     <div className="flex items-center gap-4">
-                      <span className={`text-sm font-semibold w-12 ${isSelected ? 'text-teal-700' : 'text-slate-600'}`}>
+                      <span className={`text-sm font-bold w-12 ${isSelected ? 'text-teal-700' : 'text-slate-600'}`}>
                         {ano}
                       </span>
                       <div className="flex-1 relative">
-                        <div className="h-9 bg-slate-100 rounded-lg overflow-hidden">
+                        <div className="h-10 bg-slate-100 rounded-xl overflow-hidden">
                           <div
-                            className="h-full rounded-lg flex"
+                            className="h-full rounded-xl flex"
                             style={{ width: Math.max(pTotal, 18) + '%' }}
                           >
                             {pEstado > 0 && (
                               <div
-                                className="h-full bg-slate-400"
+                                className="h-full bg-slate-400 transition-all duration-300"
                                 style={{ width: pEstado + '%' }}
                               />
                             )}
                             {pMunicipios > 0 && (
                               <div
-                                className="h-full"
+                                className="h-full transition-all duration-300"
                                 style={{
                                   width: pMunicipios + '%',
                                   background: 'linear-gradient(90deg, #0d9488, #06b6d4)'
@@ -478,22 +478,29 @@ export default function PaginaInicial({
                 );
               })}
             </div>
+
+            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-sm font-bold text-slate-600">Total</span>
+              <span className="text-xl font-extrabold text-slate-800">{formatarMoedaCompacta(dadosFiltrados.total)}</span>
+            </div>
           </Card>
         </div>
-        <div style={{ flex: '1 1 38%', minWidth: '280px' }}>
+
+        {/* Donut Chart - Area Distribution */}
+        <div className="lg:col-span-2">
           <Card className="p-6 h-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-800">Distribuição por Área</h3>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-slate-800">Distribuicao por Area</h3>
               {areaFiltro && (
                 <button
                   onClick={() => onAreaChange && onAreaChange(null)}
-                  className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+                  className="text-xs text-teal-600 hover:text-teal-700 font-semibold transition-colors"
                 >
                   Limpar filtro
                 </button>
               )}
             </div>
-            <div className="relative w-36 h-36 mx-auto mb-4">
+            <div className="relative w-40 h-40 mx-auto mb-5">
               <svg viewBox="0 0 100 100" className="w-full h-full" style={{ transform: 'rotate(-90deg)' }}>
                 {segs.map((s, i) => {
                   const r = 38;
@@ -501,17 +508,25 @@ export default function PaginaInicial({
                   return (
                     <circle
                       key={i}
+                      className="donut-segment"
                       cx="50"
                       cy="50"
                       r={r}
                       fill="none"
                       stroke={s.cor}
-                      strokeWidth="18"
+                      strokeWidth="16"
                       strokeDasharray={((s.fim - s.ini) / 100) * c + ' ' + c}
                       strokeDashoffset={-(s.ini / 100) * c}
+                      onClick={() => onAreaChange && onAreaChange(areaFiltro === dadosArea[i]?.[0] ? null : dadosArea[i]?.[0])}
                     />
                   );
                 })}
+                <text x="50" y="46" textAnchor="middle" className="fill-slate-800" style={{ fontSize: '8px', fontWeight: 800, transform: 'rotate(90deg)', transformOrigin: '50px 50px' }}>
+                  {formatarMoedaCompacta(tFins)}
+                </text>
+                <text x="50" y="56" textAnchor="middle" className="fill-slate-400" style={{ fontSize: '4px', transform: 'rotate(90deg)', transformOrigin: '50px 50px' }}>
+                  Total
+                </text>
               </svg>
             </div>
             <div className="space-y-2">
@@ -521,12 +536,16 @@ export default function PaginaInicial({
                   <div
                     key={f}
                     onClick={() => onAreaChange && onAreaChange(areaFiltro === f ? null : f)}
-                    className={`flex items-center gap-2 cursor-pointer p-1.5 -mx-1.5 rounded-lg transition-all ${
-                      isSelected ? 'bg-teal-50 ring-2 ring-teal-500' : 'hover:bg-slate-50'
+                    className={`flex items-center gap-3 cursor-pointer p-2 -mx-2 rounded-xl transition-all ${
+                      isSelected ? 'bg-teal-50 ring-2 ring-teal-400' : 'hover:bg-slate-50'
                     }`}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${f}: ${tFins > 0 ? ((v / tFins) * 100).toFixed(0) : 0}%`}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onAreaChange && onAreaChange(areaFiltro === f ? null : f); } }}
                   >
                     <div className={'w-3 h-3 rounded-full flex-shrink-0 ' + (cores[i]?.bg || 'bg-slate-400')} />
-                    <span className={`text-sm flex-1 truncate ${isSelected ? 'text-teal-700 font-medium' : 'text-slate-600'}`}>
+                    <span className={`text-sm flex-1 truncate ${isSelected ? 'text-teal-700 font-semibold' : 'text-slate-600'}`}>
                       {f}
                     </span>
                     <span className={`text-sm font-bold ${isSelected ? 'text-teal-700' : 'text-slate-800'}`}>
@@ -540,176 +559,192 @@ export default function PaginaInicial({
         </div>
       </div>
 
-      {/* Badge de filtros ativos */}
+      {/* Active Filters Badge */}
       {(anoFiltro || areaFiltro || !somenteEfetivadas) && (
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap animate-fade-in">
           <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-sm text-slate-500">Filtros:</span>
+          <span className="text-sm text-slate-500 font-medium">Filtros ativos:</span>
           {anoFiltro && (
-            <span className="px-2 py-1 bg-teal-100 text-teal-700 text-xs rounded-full font-medium">
+            <span className="px-3 py-1 bg-teal-100 text-teal-700 text-xs rounded-full font-semibold">
               {anoFiltro}
             </span>
           )}
           {areaFiltro && (
-            <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-medium">
+            <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-semibold">
               {areaFiltro}
             </span>
           )}
-          <span className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-medium">
+          <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-semibold">
             {somenteEfetivadas ? 'Liberados' : 'Planejados'}
           </span>
         </div>
       )}
 
-      {/* LINHA 3: 2 Boxes de Consulta */}
-      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 48%', minWidth: '320px' }}>
-          <Card className="overflow-hidden h-full flex flex-col">
-            <div className="p-5 border-b border-slate-100">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-semibold text-slate-800">Por Ente Beneficiário</h3>
-                <Building2 className="w-5 h-5 text-slate-400" />
+      {/* Entity & Parliamentary Lists */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Entities */}
+        <Card className="overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-teal-50">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-teal-600" />
+                <h3 className="text-base font-bold text-slate-800">Por Ente Beneficiario</h3>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar ente..."
-                  value={buscaE}
-                  onChange={e => setBuscaE(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
-              </div>
+              <span className="text-xs text-slate-400 font-medium">{muniF.length + (estadoVisivel ? 1 : 0)} entes</span>
             </div>
-            {estadoVisivel && estado && (
-              <div
-                onClick={() => onEnte(estado)}
-                className="p-4 cursor-pointer hover:bg-slate-50 border-b border-slate-100 flex items-center gap-3 group"
-              >
-                <div className="p-2.5 bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-sm">
-                  <Landmark className="w-4 h-4 text-teal-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-800 text-sm">Governo do Estado</p>
-                  <p className="text-xs text-slate-500">
-                    {contarPlanosFiltrados(estado.planos)} plano(s)
-                    {labelFiltros && <span className="text-teal-600"> | {labelFiltros}</span>}
-                  </p>
-                </div>
-                <p className="font-bold text-slate-800 text-sm">
-                  {formatarMoedaCompacta(calcularValorEnte(estado))}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar ente..."
+                value={buscaE}
+                onChange={e => setBuscaE(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 border border-transparent focus:border-teal-200 transition-all"
+                aria-label="Buscar ente beneficiario"
+              />
+            </div>
+          </div>
+          {estadoVisivel && estado && (
+            <div
+              onClick={() => onEnte(estado)}
+              className="p-4 cursor-pointer list-item-hover border-b border-teal-50 flex items-center gap-3 group"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter') onEnte(estado); }}
+            >
+              <div className="p-2.5 bg-gradient-to-br from-[#115e59] to-[#134e4a] rounded-xl">
+                <Landmark className="w-4 h-4 text-teal-300" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-800 text-sm">Governo do Estado</p>
+                <p className="text-xs text-slate-500">
+                  {contarPlanosFiltrados(estado.planos)} plano(s)
+                  {labelFiltros && <span className="text-teal-600"> | {labelFiltros}</span>}
                 </p>
-                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
               </div>
+              <p className="font-bold text-slate-800 text-sm">
+                {formatarMoedaCompacta(calcularValorEnte(estado))}
+              </p>
+              <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
+            </div>
+          )}
+          <div className="flex-1 overflow-y-auto max-h-72">
+            {muniF.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">
+                Nenhum municipio encontrado com os filtros selecionados
+              </div>
+            ) : (
+              muniF.map((m, i) => {
+                const valor = calcularValorEnte(m);
+                const numPlanos = contarPlanosFiltrados(m.planos);
+                return (
+                  <div
+                    key={m.id}
+                    onClick={() => onEnte(m)}
+                    className={'p-4 cursor-pointer list-item-hover flex items-center gap-3 group ' + (i < muniF.length - 1 ? 'border-b border-teal-50/50' : '')}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter') onEnte(m); }}
+                  >
+                    <div className="p-2.5 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl">
+                      <Building className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-800 text-sm">{m.nome}</p>
+                      <p className="text-xs text-slate-500">
+                        {numPlanos} plano(s)
+                        {labelFiltros && <span className="text-teal-600"> | {labelFiltros}</span>}
+                      </p>
+                    </div>
+                    <p className="font-bold text-slate-800 text-sm">{formatarMoedaCompacta(valor)}</p>
+                    <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
+                  </div>
+                );
+              })
             )}
-            <div className="flex-1 overflow-y-auto max-h-64">
-              {muniF.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 text-sm">
-                  Nenhum município encontrado com os filtros selecionados
-                </div>
-              ) : (
-                muniF.map((m, i) => {
-                  const valor = calcularValorEnte(m);
-                  const numPlanos = contarPlanosFiltrados(m.planos);
-                  return (
-                    <div
-                      key={m.id}
-                      onClick={() => onEnte(m)}
-                      className={'p-4 cursor-pointer hover:bg-teal-50/50 flex items-center gap-3 group ' + (i < muniF.length - 1 ? 'border-b border-slate-50' : '')}
-                    >
-                      <div className="p-2.5 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl shadow-sm">
-                        <Building className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-800 text-sm">{m.nome}</p>
-                        <p className="text-xs text-slate-500">
-                          {numPlanos} plano(s)
-                          {labelFiltros && <span className="text-teal-600"> | {labelFiltros}</span>}
-                        </p>
-                      </div>
-                      <p className="font-bold text-slate-800 text-sm">{formatarMoedaCompacta(valor)}</p>
-                      <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </Card>
-        </div>
-        <div style={{ flex: '1 1 48%', minWidth: '320px' }}>
-          <Card className="overflow-hidden h-full flex flex-col">
-            <div className="p-5 border-b border-slate-100">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-semibold text-slate-800">Por Parlamentar</h3>
-                <Users className="w-5 h-5 text-slate-400" />
+          </div>
+        </Card>
+
+        {/* Parliamentary Members */}
+        <Card className="overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-teal-50">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-indigo-600" />
+                <h3 className="text-base font-bold text-slate-800">Por Parlamentar</h3>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar parlamentar..."
-                  value={buscaP}
-                  onChange={e => setBuscaP(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-                />
+              <span className="text-xs text-slate-400 font-medium">{parlF.length} parlamentares</span>
+            </div>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar parlamentar..."
+                value={buscaP}
+                onChange={e => setBuscaP(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 border border-transparent focus:border-indigo-200 transition-all"
+                aria-label="Buscar parlamentar"
+              />
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto max-h-80">
+            {parlF.length === 0 ? (
+              <div className="p-8 text-center text-slate-400 text-sm">
+                Nenhum parlamentar encontrado com os filtros selecionados
               </div>
-            </div>
-            <div className="flex-1 overflow-y-auto max-h-80">
-              {parlF.length === 0 ? (
-                <div className="p-8 text-center text-slate-500 text-sm">
-                  Nenhum parlamentar encontrado com os filtros selecionados
-                </div>
-              ) : (
-                parlF.map((p, i) => {
-                  const valor = calcularValorParlamentar(p);
-                  const numPlanos = contarPlanosFiltrados(p.planos);
-                  const numEntes = new Set(
-                    p.planos
-                      .filter(pl => {
-                        const matchAno = !anoFiltro || pl.ano === parseInt(anoFiltro);
-                        const matchArea = !areaFiltro || pl.area_politica === areaFiltro;
-                        const matchEfetivado = !somenteEfetivadas || pl.valor_efetivado > 0;
-                        return matchAno && matchArea && matchEfetivado;
-                      })
-                      .map(pl => pl.nome_beneficiario)
-                  ).size;
-                  const fotoUrl = getFotoParlamentar(p.nome);
-                  return (
+            ) : (
+              parlF.map((p, i) => {
+                const valor = calcularValorParlamentar(p);
+                const numPlanos = contarPlanosFiltrados(p.planos);
+                const numEntes = new Set(
+                  p.planos
+                    .filter(pl => {
+                      const matchAno = !anoFiltro || pl.ano === parseInt(anoFiltro);
+                      const matchArea = !areaFiltro || pl.area_politica === areaFiltro;
+                      const matchEfetivado = !somenteEfetivadas || pl.valor_efetivado > 0;
+                      return matchAno && matchArea && matchEfetivado;
+                    })
+                    .map(pl => pl.nome_beneficiario)
+                ).size;
+                const fotoUrl = getFotoParlamentar(p.nome);
+                return (
+                  <div
+                    key={p.nome}
+                    onClick={() => onParlamentar(p)}
+                    className={'p-4 cursor-pointer list-item-hover flex items-center gap-3 group ' + (i < parlF.length - 1 ? 'border-b border-teal-50/50' : '')}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter') onParlamentar(p); }}
+                  >
+                    {fotoUrl ? (
+                      <img
+                        src={fotoUrl}
+                        alt={p.nome}
+                        className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0"
+                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
+                      />
+                    ) : null}
                     <div
-                      key={p.nome}
-                      onClick={() => onParlamentar(p)}
-                      className={'p-4 cursor-pointer hover:bg-indigo-50/50 flex items-center gap-3 group ' + (i < parlF.length - 1 ? 'border-b border-slate-50' : '')}
+                      className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-sm flex-shrink-0"
+                      style={fotoUrl ? { display: 'none' } : undefined}
                     >
-                      {fotoUrl ? (
-                        <img
-                          src={fotoUrl}
-                          alt={p.nome}
-                          className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0"
-                          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
-                        />
-                      ) : null}
-                      <div
-                        className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-sm flex-shrink-0"
-                        style={fotoUrl ? { display: 'none' } : undefined}
-                      >
-                        <Users className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-800 text-sm">{p.nome}</p>
-                        <p className="text-xs text-slate-500">
-                          {numPlanos} plano(s) - {numEntes} ente(s)
-                          {labelFiltros && <span className="text-indigo-600"> | {labelFiltros}</span>}
-                        </p>
-                      </div>
-                      <p className="font-bold text-slate-800 text-sm">{formatarMoedaCompacta(valor)}</p>
-                      <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                      <Users className="w-4 h-4 text-white" />
                     </div>
-                  );
-                })
-              )}
-            </div>
-          </Card>
-        </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-800 text-sm">{p.nome}</p>
+                      <p className="text-xs text-slate-500">
+                        {numPlanos} plano(s) - {numEntes} ente(s)
+                        {labelFiltros && <span className="text-indigo-600"> | {labelFiltros}</span>}
+                      </p>
+                    </div>
+                    <p className="font-bold text-slate-800 text-sm">{formatarMoedaCompacta(valor)}</p>
+                    <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   );

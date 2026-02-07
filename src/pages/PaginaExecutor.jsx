@@ -35,27 +35,29 @@ export default function PaginaExecutor({ exec, ente, somenteEfetivadas, onVoltar
   const vT = mostrarEfetivadas ? valorLiberado : valorPlanejado;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-fade-in">
       <BtnVoltar onClick={onVoltar} texto={'Voltar para ' + (ente?.nome || 'ente')} />
-      
-      {/* BLOCO 1: QUEM RECEBE - Header verde do executor */}
+
+      {/* Header do Executor */}
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-br from-teal-500 to-cyan-600 p-5">
+        <div className="p-6" style={{
+          background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #06b6d4 100%)'
+        }}>
           <div className="flex items-start gap-4">
             <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
               <Building2 className="w-8 h-8 text-white" />
             </div>
             <div className="flex-1">
-              <p className="text-teal-100 text-xs mb-1">EXECUTOR</p>
-              <h1 className="text-xl font-bold text-white mb-1">{exec.nome}</h1>
-              <p className="text-teal-100 text-sm font-mono">{exec.cnpj}</p>
+              <p className="text-teal-100 text-xs font-medium mb-1 tracking-wider">EXECUTOR</p>
+              <h1 className="text-xl font-extrabold text-white mb-1 tracking-tight">{exec.nome}</h1>
+              <p className="text-teal-100/80 text-sm font-mono">{exec.cnpj}</p>
             </div>
           </div>
         </div>
-        
-        {/* BLOCO 2: QUEM ENVIA E SITUACAO */}
-        <div className="p-5 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-500 mb-3">EMENDA E SITUACAO</h3>
+
+        {/* Emenda e Situacao */}
+        <div className="p-6 border-b border-teal-50">
+          <h3 className="text-xs font-bold text-slate-400 mb-4 tracking-wider">EMENDA E SITUACAO</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Linha label="Emenda" valor={exec.plano.numero_emenda + ' - ' + exec.plano.parlamentar} />
@@ -63,114 +65,112 @@ export default function PaginaExecutor({ exec, ente, somenteEfetivadas, onVoltar
               <Linha label="No Plano de Trabalho" valor={exec.numero_plano_trabalho} mono />
             </div>
             <div>
-              <Linha 
-                label="Situacao Plano de Acao" 
-                valor={<span className={'text-xs px-2 py-1 rounded-full ' + sitP.bg + ' ' + sitP.cor}>{sitP.label}</span>} 
+              <Linha
+                label="Situacao Plano de Acao"
+                valor={<span className={'text-xs px-2.5 py-1 rounded-full font-medium ' + sitP.bg + ' ' + sitP.cor}>{sitP.label}</span>}
               />
-              <Linha 
-                label="Situacao Plano de Trabalho" 
-                valor={<span className={'text-xs px-2 py-1 rounded-full ' + sitT.bg + ' ' + sitT.cor}>{sitT.label}</span>} 
+              <Linha
+                label="Situacao Plano de Trabalho"
+                valor={<span className={'text-xs px-2.5 py-1 rounded-full font-medium ' + sitT.bg + ' ' + sitT.cor}>{sitT.label}</span>}
               />
-              <Linha 
-                label="Recurso" 
+              <Linha
+                label="Recurso"
                 valor={
-                  <span className={'text-xs px-2 py-1 rounded-full flex items-center gap-1 inline-flex ' + rec.bg + ' ' + rec.cor}>
+                  <span className={'text-xs px-2.5 py-1 rounded-full flex items-center gap-1 inline-flex font-medium ' + rec.bg + ' ' + rec.cor}>
                     <RecIc className="w-3 h-3" />{rec.label}
                   </span>
-                } 
+                }
               />
             </div>
           </div>
         </div>
 
-        {/* BLOCO 3: COMO SERA APLICADO - Objeto e Detalhamento */}
-        <div className="p-5">
-          <h3 className="text-sm font-semibold text-slate-500 mb-3">APLICACAO DO RECURSO</h3>
-          <div className="bg-slate-50 rounded-xl p-4 mb-4">
-            <p className="text-xs text-slate-500 mb-1">OBJETO DE EXECUCAO</p>
-            <p className="text-lg font-semibold text-slate-800">{exec.objeto}</p>
+        {/* Aplicacao do Recurso */}
+        <div className="p-6">
+          <h3 className="text-xs font-bold text-slate-400 mb-4 tracking-wider">APLICACAO DO RECURSO</h3>
+          <div className="bg-teal-50/50 rounded-2xl p-5 mb-5 border border-teal-100/50">
+            <p className="text-xs text-teal-600 font-medium mb-1 tracking-wider">OBJETO DE EXECUCAO</p>
+            <p className="text-lg font-bold text-slate-800">{exec.objeto}</p>
             {exec.detalhamento_objeto && exec.detalhamento_objeto !== exec.objeto && (
-              <p className="text-sm text-slate-600 mt-2">{exec.detalhamento_objeto}</p>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">{exec.detalhamento_objeto}</p>
             )}
           </div>
-          
-          {/* Toggle Liberado/Planejado */}
-          <div className="flex items-center justify-end mb-3">
+
+          <div className="flex items-center justify-end mb-4">
             <button
               onClick={() => setMostrarEfetivadas(!mostrarEfetivadas)}
-              className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-700 font-medium transition-colors"
+              className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-700 font-semibold transition-colors"
             >
               {mostrarEfetivadas ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
               <span>{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
             </button>
           </div>
 
-          {/* Valores discriminados */}
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-              <p className="text-xs text-emerald-600">Valor Planejado</p>
-              <p className={'text-xl font-bold ' + (!mostrarEfetivadas ? 'text-emerald-700' : 'text-emerald-600/60')}>{formatarMoedaCompacta(valorPlanejado)}</p>
+            <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+              <p className="text-xs text-emerald-600 font-medium">Valor Planejado</p>
+              <p className={'text-xl font-extrabold ' + (!mostrarEfetivadas ? 'text-emerald-700' : 'text-emerald-600/50')}>{formatarMoedaCompacta(valorPlanejado)}</p>
             </div>
-            <div className="bg-teal-50 rounded-xl p-4 border border-teal-100">
-              <p className="text-xs text-teal-600">Valor Liberado</p>
-              <p className={'text-xl font-bold ' + (mostrarEfetivadas ? 'text-teal-700' : 'text-teal-600/60')}>{formatarMoedaCompacta(valorLiberado)}</p>
+            <div className="bg-teal-50 rounded-2xl p-4 border border-teal-100">
+              <p className="text-xs text-teal-600 font-medium">Valor Liberado</p>
+              <p className={'text-xl font-extrabold ' + (mostrarEfetivadas ? 'text-teal-700' : 'text-teal-600/50')}>{formatarMoedaCompacta(valorLiberado)}</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-slate-50 rounded-xl p-4">
-              <p className="text-xs text-slate-500">Custeio</p>
-              <p className="text-xl font-bold text-slate-700">{formatarMoedaCompacta(exec.valor_custeio)}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <p className="text-xs text-slate-500 font-medium">Custeio</p>
+              <p className="text-xl font-extrabold text-slate-700">{formatarMoedaCompacta(exec.valor_custeio)}</p>
             </div>
-            <div className="bg-slate-50 rounded-xl p-4">
-              <p className="text-xs text-slate-500">Investimento</p>
-              <p className="text-xl font-bold text-slate-700">{formatarMoedaCompacta(exec.valor_investimento)}</p>
+            <div className="bg-slate-50 rounded-2xl p-4">
+              <p className="text-xs text-slate-500 font-medium">Investimento</p>
+              <p className="text-xl font-extrabold text-slate-700">{formatarMoedaCompacta(exec.valor_investimento)}</p>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* BLOCO 4: METAS */}
+      {/* Metas */}
       {loadingMetas ? (
         <Card className="p-5">
           <Loading />
         </Card>
       ) : metas.length > 0 && (
         <Card className="overflow-hidden">
-          <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-white">
+          <div className="p-5 border-b border-teal-50 bg-gradient-to-r from-amber-50/50 to-white">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 rounded-lg">
+              <div className="p-2.5 bg-amber-100 rounded-xl">
                 <Target className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-slate-800">Metas do Projeto</h3>
+                <h3 className="text-lg font-bold text-slate-800">Metas do Projeto</h3>
                 <p className="text-sm text-slate-500">{metas.length} meta(s) cadastrada(s)</p>
               </div>
             </div>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-teal-50">
             {metas.map((meta) => (
-              <div key={meta.id} className="p-4">
+              <div key={meta.id} className="p-5">
                 <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
                     <span className="text-xs font-bold text-amber-700">{meta.sequencial}</span>
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-slate-800 text-sm">{meta.nome}</p>
-                    <p className="text-xs text-slate-600 mt-1">{meta.descricao}</p>
+                    <p className="text-xs text-slate-500 mt-1">{meta.descricao}</p>
                     <div className="flex flex-wrap gap-3 mt-3">
-                      <div className="bg-slate-100 rounded-lg px-3 py-1.5">
+                      <div className="bg-slate-50 rounded-xl px-3 py-2">
                         <p className="text-xs text-slate-500">Quantidade</p>
-                        <p className="text-sm font-semibold text-slate-800">{formatarNumero(meta.quantidade)} {meta.unidade_medida}</p>
+                        <p className="text-sm font-bold text-slate-800">{formatarNumero(meta.quantidade)} {meta.unidade_medida}</p>
                       </div>
-                      <div className="bg-emerald-50 rounded-lg px-3 py-1.5">
+                      <div className="bg-emerald-50 rounded-xl px-3 py-2">
                         <p className="text-xs text-emerald-600">Valor Emenda</p>
-                        <p className="text-sm font-semibold text-emerald-700">
+                        <p className="text-sm font-bold text-emerald-700">
                           {formatarMoedaCompacta((meta.valor_custeio_emenda || 0) + (meta.valor_investimento_emenda || 0))}
                         </p>
                       </div>
-                      <div className="bg-slate-50 rounded-lg px-3 py-1.5">
+                      <div className="bg-slate-50 rounded-xl px-3 py-2">
                         <p className="text-xs text-slate-500">Prazo</p>
-                        <p className="text-sm font-semibold text-slate-700">{meta.prazo_meses} meses</p>
+                        <p className="text-sm font-bold text-slate-700">{meta.prazo_meses} meses</p>
                       </div>
                     </div>
                   </div>
@@ -181,7 +181,6 @@ export default function PaginaExecutor({ exec, ente, somenteEfetivadas, onVoltar
         </Card>
       )}
 
-      {/* Secoes colapsaveis */}
       <Secao titulo="Ente Beneficiario" icone={Landmark}>
         <div className="pt-3">
           <Linha label="Nome" valor={ente?.nome} />
@@ -189,20 +188,20 @@ export default function PaginaExecutor({ exec, ente, somenteEfetivadas, onVoltar
           <Linha label="Area da Politica" valor={exec.plano.area_politica} />
         </div>
       </Secao>
-      
+
       {exec.banco && (
         <Secao titulo="Dados Bancarios do Executor" icone={CreditCard}>
           <div className="pt-3">
             <Linha label="Banco" valor={exec.banco} />
             <Linha label="Agencia" valor={exec.agencia} mono />
             <Linha label="Conta" valor={exec.conta} mono />
-            <Linha 
-              label="Status" 
+            <Linha
+              label="Status"
               valor={
-                <span className={'text-xs px-2 py-1 rounded ' + getSituacaoConta(exec.situacao_conta).bg + ' ' + getSituacaoConta(exec.situacao_conta).cor}>
+                <span className={'text-xs px-2.5 py-1 rounded-full font-medium ' + getSituacaoConta(exec.situacao_conta).bg + ' ' + getSituacaoConta(exec.situacao_conta).cor}>
                   {exec.situacao_conta}
                 </span>
-              } 
+              }
             />
           </div>
         </Secao>
