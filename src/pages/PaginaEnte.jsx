@@ -30,16 +30,13 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
 
   const anosD = Object.keys(ente.anos).sort();
 
-  // Calcular total baseado no toggle e filtros de ano
   const total = useMemo(() => {
     if (ano) {
-      // Se tem filtro de ano, calcular apenas para aquele ano
       if (mostrarEfetivadas) {
         return ente.anosEfetivados?.[ano] || 0;
       }
       return ente.anos?.[ano] || 0;
     }
-    // Sem filtro de ano, soma todos
     if (mostrarEfetivadas) {
       return Object.values(ente.anosEfetivados || {}).reduce((a, b) => a + b, 0);
     }
@@ -53,7 +50,6 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
     return Math.max(...Object.values(ente.anos), 1);
   }, [ente, mostrarEfetivadas]);
 
-  // Calcular distribuição por área
   const dadosArea = useMemo(() => {
     const planos = enteCompleto?.planos || ente.planos || [];
     const areaMap = {};
@@ -109,7 +105,6 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
         };
       })
     );
-    // Quando mostrarEfetivadas, filtrar apenas executores com valor > 0
     if (mostrarEfetivadas) {
       lista = lista.filter(e => e.vT > 0);
     }
@@ -117,28 +112,28 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
   }, [planosF, mostrarEfetivadas]);
 
   return (
-    <div className="space-y-5">
-      <Card className="p-5">
-        <BtnVoltar onClick={onVoltar} texto="Voltar à visão geral" />
+    <div className="space-y-6 animate-fade-in">
+      <Card className="p-6">
+        <BtnVoltar onClick={onVoltar} texto="Voltar a visao geral" />
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={'p-4 rounded-2xl shadow-sm ' + (ente.tipo === 'estado' ? 'bg-gradient-to-br from-slate-800 to-slate-900' : 'bg-gradient-to-br from-teal-500 to-cyan-600')}>
+            <div className={'p-4 rounded-2xl shadow-sm ' + (ente.tipo === 'estado' ? 'bg-gradient-to-br from-[#115e59] to-[#134e4a]' : 'bg-gradient-to-br from-teal-500 to-cyan-500')}>
               {ente.tipo === 'estado'
-                ? <Landmark className="w-8 h-8 text-teal-400" />
+                ? <Landmark className="w-8 h-8 text-teal-300" />
                 : <Building className="w-8 h-8 text-white" />
               }
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-slate-800">{ente.nome}</h2>
+              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{ente.nome}</h2>
               <p className="text-slate-500 text-sm">CNPJ: {ente.cnpj}</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-bold text-slate-800">{formatarMoeda(total)}</p>
-            <p className="text-slate-500 mb-2">Total {mostrarEfetivadas ? 'Liberado' : 'Planejado'}</p>
+            <p className="text-3xl font-extrabold text-slate-800 tracking-tight">{formatarMoeda(total)}</p>
+            <p className="text-slate-500 text-sm mb-2">Total {mostrarEfetivadas ? 'Liberado' : 'Planejado'}</p>
             <button
               onClick={() => setMostrarEfetivadas(!mostrarEfetivadas)}
-              className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-700 font-medium transition-colors ml-auto"
+              className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-700 font-semibold transition-colors ml-auto"
             >
               {mostrarEfetivadas ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
               <span>{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
@@ -147,20 +142,18 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
         </div>
       </Card>
 
-      {/* Gráficos lado a lado */}
-      <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
-        {/* Gráfico por ano */}
-        <div style={{ flex: '1 1 58%', minWidth: '340px' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3">
           <Card className="p-6 h-full">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-slate-800">Transferências por Ano</h3>
                 <TrendingUp className="w-5 h-5 text-teal-500" />
+                <h3 className="text-lg font-bold text-slate-800">Transferencias por Ano</h3>
               </div>
-              <div className="flex gap-1 flex-wrap">
+              <div className="flex gap-1.5 flex-wrap">
                 <button
                   onClick={() => setAno(null)}
-                  className={'px-3 py-1.5 text-sm rounded-lg font-medium transition-all ' + (!ano ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}
+                  className={'filter-chip px-3 py-1.5 text-sm rounded-lg font-medium ' + (!ano ? 'filter-chip-active' : 'bg-slate-100 text-slate-600')}
                 >
                   Todos
                 </button>
@@ -168,7 +161,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                   <button
                     key={a}
                     onClick={() => setAno(a)}
-                    className={'px-3 py-1.5 text-sm rounded-lg font-medium transition-all ' + (ano === a ? 'bg-teal-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}
+                    className={'filter-chip px-3 py-1.5 text-sm rounded-lg font-medium ' + (ano === a ? 'filter-chip-active' : 'bg-slate-100 text-slate-600')}
                   >
                     {a}
                   </button>
@@ -183,11 +176,11 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                 return (
                   <div key={a} className="group">
                     <div className="flex items-center gap-4">
-                      <span className={'text-sm font-semibold w-12 ' + (sel ? 'text-slate-700' : 'text-slate-400')}>{a}</span>
+                      <span className={'text-sm font-bold w-12 ' + (sel ? 'text-slate-700' : 'text-slate-400')}>{a}</span>
                       <div className="flex-1 relative">
-                        <div className="h-9 bg-slate-100 rounded-lg overflow-hidden">
+                        <div className="h-10 bg-slate-100 rounded-xl overflow-hidden">
                           <div
-                            className={'h-full rounded-lg relative overflow-hidden transition-all duration-300 ' + (sel ? '' : 'opacity-30')}
+                            className={'h-full rounded-xl relative overflow-hidden transition-all duration-300 ' + (sel ? '' : 'opacity-30')}
                             style={{
                               width: Math.max(p, 12) + '%',
                               background: sel ? 'linear-gradient(90deg, #0d9488, #06b6d4)' : '#94a3b8'
@@ -207,15 +200,14 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
           </Card>
         </div>
 
-        {/* Gráfico por área */}
-        <div style={{ flex: '1 1 38%', minWidth: '280px' }}>
+        <div className="lg:col-span-2">
           <Card className="p-6 h-full">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-800">Por Área</h3>
+              <h3 className="text-lg font-bold text-slate-800">Por Area</h3>
               {areaFiltro && (
                 <button
                   onClick={() => setAreaFiltro(null)}
-                  className="text-xs text-teal-600 hover:text-teal-700 font-medium"
+                  className="text-xs text-teal-600 hover:text-teal-700 font-semibold"
                 >
                   Limpar filtro
                 </button>
@@ -223,7 +215,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
             </div>
             {dadosArea.length > 0 ? (
               <>
-                <div className="relative w-32 h-32 mx-auto mb-4">
+                <div className="relative w-36 h-36 mx-auto mb-4">
                   <svg viewBox="0 0 100 100" className="w-full h-full" style={{ transform: 'rotate(-90deg)' }}>
                     {segs.map((s, i) => {
                       const r = 38;
@@ -231,12 +223,13 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                       return (
                         <circle
                           key={i}
+                          className="donut-segment"
                           cx="50"
                           cy="50"
                           r={r}
                           fill="none"
                           stroke={s.cor}
-                          strokeWidth="18"
+                          strokeWidth="16"
                           strokeDasharray={((s.fim - s.ini) / 100) * c + ' ' + c}
                           strokeDashoffset={-(s.ini / 100) * c}
                         />
@@ -244,22 +237,22 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                     })}
                   </svg>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {dadosArea.map(([f, v], i) => {
                     const isSelected = areaFiltro === f;
                     return (
                       <div
                         key={f}
                         onClick={() => setAreaFiltro(areaFiltro === f ? null : f)}
-                        className={`flex items-center gap-2 cursor-pointer p-1.5 -mx-1.5 rounded-lg transition-all ${
-                          isSelected ? 'bg-teal-50 ring-2 ring-teal-500' : 'hover:bg-slate-50'
+                        className={`flex items-center gap-2 cursor-pointer p-2 -mx-2 rounded-xl transition-all ${
+                          isSelected ? 'bg-teal-50 ring-2 ring-teal-400' : 'hover:bg-slate-50'
                         }`}
                       >
-                        <div className={'w-2.5 h-2.5 rounded-full flex-shrink-0 ' + (cores[i]?.bg || 'bg-slate-400')} />
-                        <span className={`text-xs flex-1 truncate ${isSelected ? 'text-teal-700 font-medium' : 'text-slate-600'}`}>
+                        <div className={'w-3 h-3 rounded-full flex-shrink-0 ' + (cores[i]?.bg || 'bg-slate-400')} />
+                        <span className={`text-sm flex-1 truncate ${isSelected ? 'text-teal-700 font-semibold' : 'text-slate-600'}`}>
                           {f}
                         </span>
-                        <span className={`text-xs font-bold ${isSelected ? 'text-teal-700' : 'text-slate-800'}`}>
+                        <span className={`text-sm font-bold ${isSelected ? 'text-teal-700' : 'text-slate-800'}`}>
                           {tFins > 0 ? ((v / tFins) * 100).toFixed(0) : 0}%
                         </span>
                       </div>
@@ -268,8 +261,8 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                 </div>
               </>
             ) : (
-              <div className="text-center text-slate-500 py-8 text-sm">
-                Nenhum dado de área disponível
+              <div className="text-center text-slate-400 py-8 text-sm">
+                Nenhum dado de area disponivel
               </div>
             )}
           </Card>
@@ -277,13 +270,13 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
       </div>
 
       <Card className="overflow-hidden">
-        <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
+        <div className="p-5 border-b border-teal-50 bg-gradient-to-r from-teal-50/50 to-white">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-teal-100 rounded-lg">
+            <div className="p-2.5 bg-teal-100 rounded-xl">
               <Building2 className="w-5 h-5 text-teal-600" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-slate-800">Projetos por Executor</h3>
+              <h3 className="text-lg font-bold text-slate-800">Projetos por Executor</h3>
               <p className="text-sm text-slate-500">
                 {execs.length} projeto(s) encontrado(s)
                 {areaFiltro && ` em ${areaFiltro}`}
@@ -294,28 +287,28 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
         {loading ? (
           <Loading />
         ) : execs.length === 0 ? (
-          <div className="p-8 text-center text-slate-500">
+          <div className="p-8 text-center text-slate-400">
             Nenhum executor encontrado para este filtro.
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-teal-50">
             {execs.map((ex, i) => {
               const sit = getSituacaoTrabalho(ex.situacao_plano_trabalho);
               return (
                 <div
                   key={ex.id + '-' + i}
                   onClick={() => onExec(ex)}
-                  className="p-5 hover:bg-teal-50/30 cursor-pointer group"
+                  className="p-5 list-item-hover cursor-pointer group"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl shadow-sm flex-shrink-0">
+                    <div className="p-3 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl shadow-sm flex-shrink-0">
                       <Building2 className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-slate-800 mb-1">{ex.nome}</p>
-                      <p className="text-sm text-slate-600 line-clamp-2 mb-2">{ex.detalhamento_objeto || ex.objeto}</p>
+                      <p className="text-sm text-slate-500 line-clamp-2 mb-2">{ex.detalhamento_objeto || ex.objeto}</p>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className={'text-xs px-2 py-1 rounded-full font-medium ' + sit.bg + ' ' + sit.cor}>{sit.label}</span>
+                        <span className={'text-xs px-2.5 py-1 rounded-full font-medium ' + sit.bg + ' ' + sit.cor}>{sit.label}</span>
                         <span className="text-xs text-slate-400">-</span>
                         <span className="text-xs text-slate-500">{ex.plano.ano}</span>
                         <span className="text-xs text-slate-400">-</span>
@@ -323,7 +316,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                         {ex.plano.area_politica && (
                           <>
                             <span className="text-xs text-slate-400">-</span>
-                            <span className="text-xs text-teal-600">{ex.plano.area_politica}</span>
+                            <span className="text-xs text-teal-600 font-medium">{ex.plano.area_politica}</span>
                           </>
                         )}
                       </div>

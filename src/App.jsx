@@ -12,9 +12,9 @@ export default function App() {
   const [exec, setExec] = useState(null);
   const [ajuda, setAjuda] = useState(false);
   const [origem, setOrigem] = useState(null);
-  const [anoFiltro, setAnoFiltro] = useState(null); // null = Todos
-  const [areaFiltro, setAreaFiltro] = useState(null); // null = Todas
-  const [somenteEfetivadas, setSomenteEfetivadas] = useState(true); // Inicia mostrando valores liberados
+  const [anoFiltro, setAnoFiltro] = useState(null);
+  const [areaFiltro, setAreaFiltro] = useState(null);
+  const [somenteEfetivadas, setSomenteEfetivadas] = useState(true);
 
   const { data, loading, error, refetch } = useApi(fetchDadosAgregados, []);
 
@@ -68,10 +68,10 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Header onAjuda={() => setAjuda(true)} />
       {ajuda && <TelaAjuda onClose={() => setAjuda(false)} />}
-      <main className="flex-1 max-w-5xl mx-auto px-4 py-6 w-full">
+      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-8 w-full">
         {loading && <Loading />}
         {error && <Erro mensagem={error} onRetry={refetch} />}
         {!loading && !error && data && (
