@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { TrendingUp, Building2, Users, Landmark, Building, ArrowRight, ChevronDown, ToggleLeft, ToggleRight } from 'lucide-react';
+import { TrendingUp, Building2, Users, Landmark, Building, ArrowRight, ChevronDown, ToggleLeft, ToggleRight, BookOpen } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { BtnVoltar, Loading } from '../components/ui';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
@@ -16,6 +16,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
   const [mostrarEfetivadas, setMostrarEfetivadas] = useState(somenteEfetivadas);
 
   const anosD = Object.keys(parl.anos).sort();
+  const fotoUrl = getFotoParlamentar(parl.nome);
 
   const total = useMemo(() => {
     if (ano) {
@@ -93,6 +94,17 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
     return Object.values(map).filter(e => e.planos.length > 0).sort((a, b) => b.total - a.total);
   }, [parl, ano, areaFiltro, mostrarEfetivadas]);
 
+  const totalEstadoParl = useMemo(() => {
+    return entesAgregados.filter(e => e.tipo === 'estado').reduce((acc, e) => acc + e.total, 0);
+  }, [entesAgregados]);
+
+  const totalMunicipiosParl = useMemo(() => {
+    return entesAgregados.filter(e => e.tipo !== 'estado').reduce((acc, e) => acc + e.total, 0);
+  }, [entesAgregados]);
+
+  const numEntes = entesAgregados.length;
+  const labelPeriodo = ano ? ano : `${anosD[0]}-${anosD[anosD.length - 1]}`;
+
   useEffect(() => {
     async function carregarExecutores() {
       if (!enteExp) return;
@@ -115,56 +127,96 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
   }, [enteExp, entesAgregados, entesComExecutores]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <Card className="p-6">
-        <BtnVoltar onClick={onVoltar} texto="Voltar a visao geral" />
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {getFotoParlamentar(parl.nome) ? (
+    <div className="space-y-4 animate-fade-in">
+      {/* Hero Context Card */}
+      <div className="relative overflow-hidden rounded-2xl" style={{
+        background: 'linear-gradient(135deg, #312e81 0%, #3730a3 30%, #4338ca 60%, #4f46e5 100%)',
+        boxShadow: '0 20px 40px -10px rgba(49, 46, 129, 0.3)'
+      }}>
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <svg className="absolute -top-10 -right-10 w-48 h-48 opacity-10" viewBox="0 0 200 200" fill="none">
+            <circle cx="100" cy="100" r="90" stroke="#a5b4fc" strokeWidth="2" fill="none" />
+            <circle cx="100" cy="100" r="60" stroke="#a5b4fc" strokeWidth="1.5" fill="none" opacity="0.5" />
+          </svg>
+          <div className="absolute top-6 left-[20%] w-2 h-2 bg-indigo-300/20 rounded-full" />
+          <div className="absolute bottom-8 right-[30%] w-3 h-3 bg-violet-300/15 rounded-full" />
+        </div>
+
+        <div className="relative p-5 sm:p-6">
+          <BtnVoltar onClick={onVoltar} texto="Voltar a visao geral" light />
+
+          <div className="flex flex-wrap items-center gap-4 mt-1">
+            {fotoUrl ? (
               <img
-                src={getFotoParlamentar(parl.nome)}
+                src={fotoUrl}
                 alt={parl.nome}
-                className="w-16 h-16 rounded-2xl object-cover shadow-sm"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover shadow-lg border-2 border-white/20"
                 onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
               />
             ) : null}
             <div
-              className="p-4 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-sm"
-              style={getFotoParlamentar(parl.nome) ? { display: 'none' } : undefined}
+              className="p-4 bg-white/10 rounded-2xl border border-white/20"
+              style={fotoUrl ? { display: 'none' } : undefined}
             >
-              <Users className="w-8 h-8 text-white" />
+              <Users className="w-8 h-8 text-indigo-300" />
             </div>
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">{parl.nome}</h2>
-              <p className="text-slate-500 text-sm">{parl.planos.length} plano(s) de acao - {parl.entes.size || parl.entes?.length || 0} ente(s) beneficiados</p>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">{parl.nome}</h2>
+              <p className="text-indigo-200/70 text-sm">{parl.planos.length} plano(s) de acao - {numEntes} ente(s) beneficiados</p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-3xl font-extrabold text-slate-800 tracking-tight">{formatarMoeda(total)}</p>
-            <p className="text-slate-500 text-sm mb-2">Total {mostrarEfetivadas ? 'Liberado' : 'Planejado'}</p>
+
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-indigo-200/70 text-xs font-medium mb-1">
+                Total {mostrarEfetivadas ? 'Liberado' : 'Planejado'} ({labelPeriodo})
+              </p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                {formatarMoeda(total)}
+              </p>
+            </div>
             <button
               onClick={() => setMostrarEfetivadas(!mostrarEfetivadas)}
-              className="flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-semibold transition-colors ml-auto"
+              className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
             >
-              {mostrarEfetivadas ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-              <span>{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
+              {mostrarEfetivadas ? <ToggleRight className="w-5 h-5 text-indigo-300" /> : <ToggleLeft className="w-5 h-5 text-slate-400" />}
+              <span className="text-xs">{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
             </button>
           </div>
-        </div>
-      </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3">
-          <Card className="p-6 h-full">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-indigo-500" />
-                <h3 className="text-lg font-bold text-slate-800">Repasses por Ano</h3>
+          {/* Estado / Municípios breakdown */}
+          <div className="flex flex-wrap gap-5 pt-3 mt-3 border-t border-white/10">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-indigo-300/60" />
+              <div>
+                <p className="text-indigo-200/50 text-xs">Estado</p>
+                <p className="text-white text-base font-bold">{formatarMoedaCompacta(totalEstadoParl)}</p>
               </div>
-              <div className="flex gap-1.5 flex-wrap">
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-violet-400" />
+              <div>
+                <p className="text-indigo-200/50 text-xs">Municipios</p>
+                <p className="text-white text-base font-bold">{formatarMoedaCompacta(totalMunicipiosParl)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="lg:col-span-3">
+          <Card className="p-4 h-full">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-indigo-500" />
+                <h3 className="text-sm font-bold text-slate-800">Repasses por Ano</h3>
+              </div>
+              <div className="flex gap-1 flex-wrap">
                 <button
                   onClick={() => setAno(null)}
-                  className={'filter-chip px-3 py-1.5 text-sm rounded-lg font-medium ' + (!ano ? 'filter-chip-active' : 'bg-slate-100 text-slate-600')}
+                  className={'filter-chip px-2.5 py-1 text-xs rounded-lg font-medium ' + (!ano ? 'filter-chip-active' : 'bg-slate-100 text-slate-600')}
                 >
                   Todos
                 </button>
@@ -172,36 +224,47 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
                   <button
                     key={a}
                     onClick={() => setAno(a)}
-                    className={'filter-chip px-3 py-1.5 text-sm rounded-lg font-medium ' + (ano === a ? 'filter-chip-active' : 'bg-slate-100 text-slate-600')}
+                    className={'filter-chip px-2.5 py-1 text-xs rounded-lg font-medium ' + (ano === a ? 'filter-chip-active' : 'bg-slate-100 text-slate-600')}
                   >
                     {a}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {anosD.map(a => {
                 const v = mostrarEfetivadas ? (parl.anosEfetivados?.[a] || 0) : parl.anos[a];
                 const p = maxAno > 0 ? (v / maxAno) * 100 : 0;
                 const sel = !ano || ano === a;
                 return (
                   <div key={a} className="group">
-                    <div className="flex items-center gap-4">
-                      <span className={'text-sm font-bold w-12 ' + (sel ? 'text-slate-700' : 'text-slate-400')}>{a}</span>
+                    <div className="flex items-center gap-3">
+                      <span className={'text-xs font-bold w-10 ' + (sel ? 'text-slate-700' : 'text-slate-400')}>{a}</span>
                       <div className="flex-1 relative">
-                        <div className="h-10 bg-slate-100 rounded-xl overflow-hidden">
+                        <div className="h-8 bg-slate-100 rounded-lg overflow-hidden">
                           <div
-                            className={'h-full rounded-xl relative overflow-hidden transition-all duration-300 ' + (sel ? '' : 'opacity-30')}
+                            className={'h-full rounded-lg transition-all duration-300 ' + (sel ? '' : 'opacity-30')}
                             style={{
-                              width: Math.max(p, 12) + '%',
+                              width: Math.max(p, 5) + '%',
                               background: sel ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : '#94a3b8'
                             }}
-                          >
-                            <div className="absolute inset-0 flex items-center justify-end pr-3">
-                              <span className="text-sm font-bold text-white drop-shadow-sm">{formatarMoedaCompacta(v)}</span>
-                            </div>
-                          </div>
+                          />
                         </div>
+                        {p >= 30 ? (
+                          <div className="absolute inset-y-0 flex items-center justify-end pr-2"
+                            style={{ width: p + '%' }}>
+                            <span className={'text-xs font-bold drop-shadow-sm ' + (sel ? 'text-white' : 'text-white/50')}>
+                              {formatarMoedaCompacta(v)}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="absolute inset-y-0 flex items-center pl-2"
+                            style={{ left: Math.max(p, 5) + '%' }}>
+                            <span className={'text-xs font-bold ' + (sel ? 'text-slate-600' : 'text-slate-400')}>
+                              {formatarMoedaCompacta(v)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -212,9 +275,9 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
         </div>
 
         <div className="lg:col-span-2">
-          <Card className="p-6 h-full">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-slate-800">Por Area</h3>
+          <Card className="p-4 h-full">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-800">Por Area</h3>
               {areaFiltro && (
                 <button
                   onClick={() => setAreaFiltro(null)}
@@ -226,7 +289,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
             </div>
             {dadosArea.length > 0 ? (
               <>
-                <div className="relative w-36 h-36 mx-auto mb-4">
+                <div className="relative w-28 h-28 mx-auto mb-3">
                   <svg viewBox="0 0 100 100" className="w-full h-full" style={{ transform: 'rotate(-90deg)' }}>
                     {segs.map((s, i) => {
                       const r = 38;
@@ -248,22 +311,22 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
                     })}
                   </svg>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {dadosArea.map(([f, v], i) => {
                     const isSelected = areaFiltro === f;
                     return (
                       <div
                         key={f}
                         onClick={() => setAreaFiltro(areaFiltro === f ? null : f)}
-                        className={`flex items-center gap-2 cursor-pointer p-2 -mx-2 rounded-xl transition-all ${
+                        className={`flex items-center gap-2 cursor-pointer p-1.5 -mx-1.5 rounded-lg transition-all ${
                           isSelected ? 'bg-indigo-50 ring-2 ring-indigo-400' : 'hover:bg-slate-50'
                         }`}
                       >
-                        <div className={'w-3 h-3 rounded-full flex-shrink-0 ' + (cores[i]?.bg || 'bg-slate-400')} />
-                        <span className={`text-sm flex-1 truncate ${isSelected ? 'text-indigo-700 font-semibold' : 'text-slate-600'}`}>
+                        <div className={'w-2.5 h-2.5 rounded-full flex-shrink-0 ' + (cores[i]?.bg || 'bg-slate-400')} />
+                        <span className={`text-xs flex-1 truncate ${isSelected ? 'text-indigo-700 font-semibold' : 'text-slate-600'}`}>
                           {f}
                         </span>
-                        <span className={`text-sm font-bold ${isSelected ? 'text-indigo-700' : 'text-slate-800'}`}>
+                        <span className={`text-xs font-bold ${isSelected ? 'text-indigo-700' : 'text-slate-800'}`}>
                           {tFins > 0 ? ((v / tFins) * 100).toFixed(0) : 0}%
                         </span>
                       </div>
@@ -280,15 +343,16 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
         </div>
       </div>
 
+      {/* Entes Beneficiados */}
       <Card className="overflow-hidden">
-        <div className="p-5 border-b border-teal-50 bg-gradient-to-r from-indigo-50/50 to-white">
+        <div className="p-4 border-b border-teal-50 bg-gradient-to-r from-indigo-50/50 to-white">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-100 rounded-xl">
-              <Building2 className="w-5 h-5 text-indigo-600" />
+            <div className="p-2 bg-indigo-100 rounded-xl">
+              <Building2 className="w-4 h-4 text-indigo-600" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-800">Entes Beneficiados</h3>
-              <p className="text-sm text-slate-500">
+              <h3 className="text-sm font-bold text-slate-800">Entes Beneficiados</h3>
+              <p className="text-xs text-slate-500">
                 {entesAgregados.length} ente(s) encontrado(s)
                 {areaFiltro && ` em ${areaFiltro}`}
               </p>
@@ -303,7 +367,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
                 className="p-4 list-item-hover cursor-pointer"
               >
                 <div className="flex items-center gap-3">
-                  <div className={'p-2.5 rounded-xl ' + (ente.tipo === 'estado' ? 'bg-gradient-to-br from-[#115e59] to-[#134e4a]' : 'bg-gradient-to-br from-teal-500 to-cyan-500')}>
+                  <div className={'p-2 rounded-xl ' + (ente.tipo === 'estado' ? 'bg-gradient-to-br from-[#115e59] to-[#134e4a]' : 'bg-gradient-to-br from-teal-500 to-cyan-500')}>
                     {ente.tipo === 'estado'
                       ? <Landmark className="w-4 h-4 text-teal-300" />
                       : <Building className="w-4 h-4 text-white" />
@@ -314,7 +378,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
                     <p className="text-xs text-slate-500">{ente.planos.length} plano(s)</p>
                   </div>
                   <p className="font-bold text-slate-800 text-sm">{formatarMoedaCompacta(ente.total)}</p>
-                  <ChevronDown className={'w-5 h-5 text-slate-400 transition-transform duration-200 ' + (enteExp === ente.cnpj ? 'rotate-180' : '')} />
+                  <ChevronDown className={'w-4 h-4 text-slate-400 transition-transform duration-200 ' + (enteExp === ente.cnpj ? 'rotate-180' : '')} />
                 </div>
               </div>
               {enteExp === ente.cnpj && (
@@ -347,27 +411,25 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
                           <div
                             key={ex.id + '-' + i}
                             onClick={() => onExec(ex)}
-                            className="p-4 hover:bg-indigo-50/50 cursor-pointer border-b border-teal-50/50 last:border-0 ml-8 group"
+                            className="p-4 hover:bg-indigo-50/50 cursor-pointer border-b border-teal-50/50 last:border-0 ml-6 group transition-colors"
                           >
-                            <div className="flex items-start gap-3">
-                              <div className="p-2 bg-white rounded-xl shadow-sm">
-                                <Building2 className="w-4 h-4 text-teal-600" />
+                            <div className="flex items-start justify-between gap-3 mb-1.5">
+                              <p className="font-medium text-slate-800 text-sm leading-snug flex-1 group-hover:text-indigo-700 transition-colors">
+                                {ex.detalhamento_objeto || ex.objeto || ex.nome}
+                              </p>
+                              <div className="text-right flex-shrink-0 ml-2">
+                                <p className="font-bold text-indigo-700 text-sm">{formatarMoedaCompacta(ex.vT)}</p>
+                                <p className="text-xs text-slate-400">{mostrarEfetivadas ? 'liberado' : 'planejado'}</p>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-medium text-slate-800 text-sm">{ex.nome}</p>
-                                <p className="text-xs text-slate-500 line-clamp-1">{ex.objeto}</p>
-                                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                  <span className={'text-xs px-2.5 py-0.5 rounded-full ' + sit.bg + ' ' + sit.cor}>{sit.label}</span>
-                                  {ex.plano.area_politica && (
-                                    <span className="text-xs text-indigo-600 font-medium">{ex.plano.area_politica}</span>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-right flex-shrink-0">
-                                <p className="font-bold text-slate-800 text-sm">{formatarMoedaCompacta(ex.vT)}</p>
-                                <p className="text-xs text-slate-500">{mostrarEfetivadas ? 'Liberado' : 'Planejado'}</p>
-                              </div>
-                              <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all mt-1" />
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                              <span className="text-slate-500 font-medium">{ex.nome}</span>
+                              <span className="text-slate-300">•</span>
+                              <span className={'px-2 py-0.5 rounded-full ' + sit.bg + ' ' + sit.cor}>{sit.label}</span>
+                              {ex.plano.area_politica && (
+                                <span className="text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full">{ex.plano.area_politica}</span>
+                              )}
+                              <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-indigo-500 ml-auto flex-shrink-0 transition-all" />
                             </div>
                           </div>
                         );
@@ -375,7 +437,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
                     })()
                   )}
                   {!loadingEnte && (!entesComExecutores[ente.cnpj] || entesComExecutores[ente.cnpj].every(p => !p.executores?.length)) && (
-                    <div className="p-4 ml-8 text-sm text-slate-400">
+                    <div className="p-4 ml-6 text-sm text-slate-400">
                       Carregando executores...
                     </div>
                   )}

@@ -28,21 +28,28 @@ function HeroBlobs() {
   );
 }
 
-export default function Header({ onAjuda }) {
+export default function Header({ onAjuda, onHome }) {
   return (
     <header className="hero-bg">
       <HeroBlobs />
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
-            <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-900/30 border border-white/20 flex-shrink-0">
+          <button
+            onClick={onHome}
+            className="flex items-center gap-3 min-w-0 flex-shrink-0 group"
+            aria-label="Voltar à página inicial"
+          >
+            <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-900/30 border border-white/20 flex-shrink-0 group-hover:scale-105 transition-transform">
               <span className="text-white font-extrabold text-base tracking-tight">ES</span>
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 text-left">
               <h1 className="text-lg font-bold text-white tracking-tight leading-tight">TransfereES</h1>
-              <p className="text-xs text-teal-200/70 leading-tight">Portal de Transferências Especiais</p>
+              <p className="text-xs text-teal-200/70 leading-tight">
+                <span className="sm:hidden">Transferências Especiais</span>
+                <span className="hidden sm:inline">Portal de Monitoramento das Transferências Especiais</span>
+              </p>
             </div>
-          </div>
+          </button>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={onAjuda}
