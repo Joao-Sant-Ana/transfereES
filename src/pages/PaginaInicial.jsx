@@ -447,7 +447,7 @@ export default function PaginaInicial({
                         <div className="h-7 bg-slate-100 rounded-lg overflow-hidden">
                           <div
                             className="h-full rounded-lg flex"
-                            style={{ width: Math.max(pTotal, 18) + '%' }}
+                            style={{ width: Math.max(pTotal, 5) + '%' }}
                           >
                             {pEstado > 0 && (
                               <div
@@ -465,15 +465,22 @@ export default function PaginaInicial({
                               />
                             )}
                           </div>
-                          <div
-                            className="absolute inset-y-0 flex items-center justify-end pr-2"
-                            style={{ width: Math.max(pTotal, 18) + '%' }}
-                          >
+                        </div>
+                        {pTotal >= 30 ? (
+                          <div className="absolute inset-y-0 flex items-center justify-end pr-2"
+                            style={{ width: pTotal + '%' }}>
                             <span className="text-xs font-bold text-white drop-shadow-sm">
                               {formatarMoedaCompacta(vTotal)}
                             </span>
                           </div>
-                        </div>
+                        ) : (
+                          <div className="absolute inset-y-0 flex items-center pl-2"
+                            style={{ left: Math.max(pTotal, 5) + '%' }}>
+                            <span className="text-xs font-bold text-slate-600">
+                              {formatarMoedaCompacta(vTotal)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
