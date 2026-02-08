@@ -71,7 +71,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col">
       <Header onAjuda={() => setAjuda(true)} />
       {ajuda && <TelaAjuda onClose={() => setAjuda(false)} />}
-      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-8 w-full">
+      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-4 w-full">
         {loading && <Loading />}
         {error && <Erro mensagem={error} onRetry={refetch} />}
         {!loading && !error && data && (
