@@ -32,34 +32,34 @@ export default function Header({ onAjuda }) {
   return (
     <header className="hero-bg">
       <HeroBlobs />
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-teal-900/30 border border-white/20">
-              <span className="text-white font-extrabold text-lg tracking-tight">ES</span>
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-shrink-0">
+            <div className="w-10 h-10 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-900/30 border border-white/20 flex-shrink-0">
+              <span className="text-white font-extrabold text-base tracking-tight">ES</span>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-white tracking-tight">TransfereES</h1>
-              <p className="text-sm text-teal-200/70">Portal de Transferencias Especiais</p>
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold text-white tracking-tight leading-tight">TransfereES</h1>
+              <p className="text-xs text-teal-200/70 leading-tight">Portal de Transferências Especiais</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={onAjuda}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
               aria-label="Como funciona o portal"
             >
               <HelpCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Como funciona?</span>
+              <span className="hidden sm:inline text-xs">Como funciona?</span>
             </button>
-            <div className="text-right hidden sm:block">
+            <div className="text-right hidden md:block">
               <p className="text-xs text-teal-200/50">Fonte: TransfereGov</p>
             </div>
           </div>
         </div>
       </div>
       <div className="absolute bottom-0 left-0 right-0 overflow-hidden" aria-hidden="true">
-        <svg viewBox="0 0 1440 40" fill="none" className="w-full h-6 sm:h-8" preserveAspectRatio="none">
+        <svg viewBox="0 0 1440 40" fill="none" className="w-full h-4 sm:h-5" preserveAspectRatio="none">
           <path d="M0 40V20C240 0 480 0 720 20C960 40 1200 40 1440 20V40H0Z" fill="#f0fdfa" />
         </svg>
       </div>

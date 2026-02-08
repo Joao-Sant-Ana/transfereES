@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, TrendingUp, Building2, Users, Wallet, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, Filter, MapPin, FileText } from 'lucide-react';
+import { Search, TrendingUp, Building2, Users, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, Filter, BookOpen } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
 import { getFotoParlamentar } from '../utils/deputyPhotos';
@@ -253,19 +253,53 @@ export default function PaginaInicial({
 
   const labelFiltros = gerarLabelFiltros();
 
+  const totalDemandas = useMemo(() => {
+    return parlamentares.reduce((acc, p) => {
+      return acc + p.planos.filter(pl => {
+        const matchAno = !anoFiltro || pl.ano === parseInt(anoFiltro);
+        const matchArea = !areaFiltro || pl.area_politica === areaFiltro;
+        const matchEfetivado = !somenteEfetivadas || pl.valor_efetivado > 0;
+        return matchAno && matchArea && matchEfetivado;
+      }).length;
+    }, 0);
+  }, [parlamentares, anoFiltro, areaFiltro, somenteEfetivadas]);
+
+  const textoNarrativo = useMemo(() => {
+    const periodo = dadosFiltrados.labelPeriodo;
+    const numMunicipios = muniF.length;
+    const numParl = parlF.length;
+    const tipo = somenteEfetivadas ? 'liberados' : 'planejados';
+
+    const partePeriodo = anoFiltro ? `Em ${periodo}` : `Entre ${periodo}`;
+
+    let parteEntes;
+    if (estadoVisivel && numMunicipios > 0) {
+      parteEntes = `o Estado do ES e outros ${numMunicipios} município${numMunicipios !== 1 ? 's' : ''}`;
+    } else if (estadoVisivel) {
+      parteEntes = 'o Estado do ES';
+    } else if (numMunicipios > 0) {
+      parteEntes = `${numMunicipios} município${numMunicipios !== 1 ? 's' : ''}`;
+    } else {
+      parteEntes = 'os entes beneficiários';
+    }
+
+    const parteArea = areaFiltro ? ` na área de ${areaFiltro}` : '';
+
+    return `${partePeriodo}, ${parteEntes} receberam um total de ${formatarMoeda(dadosFiltrados.total)} em recursos ${tipo} de Transferências Especiais${parteArea}. Os repasses foram feitos por ${numParl} parlamentar${numParl !== 1 ? 'es' : ''} para cerca de ${totalDemandas} projetos. Confira onde esses recursos foram aplicados, no detalhamento abaixo.`;
+  }, [dadosFiltrados, muniF.length, parlF.length, estadoVisivel, anoFiltro, areaFiltro, somenteEfetivadas, totalDemandas]);
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* HERO - Total Liberado Card */}
-      <div className="relative overflow-hidden rounded-3xl p-6 sm:p-8" style={{
+    <div className="space-y-4 animate-fade-in">
+      {/* HERO - Total + Narrative */}
+      <div className="relative overflow-hidden rounded-2xl" style={{
         background: 'linear-gradient(135deg, #0f766e 0%, #115e59 40%, #134e4a 70%, #0c4a6e 100%)',
         boxShadow: '0 20px 40px -10px rgba(13, 78, 74, 0.3)'
       }}>
         {/* Decorative elements */}
         <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-          <svg className="absolute -top-10 -right-10 w-72 h-72 opacity-10" viewBox="0 0 300 300" fill="none">
+          <svg className="absolute -top-10 -right-10 w-64 h-64 opacity-10" viewBox="0 0 300 300" fill="none">
             <circle cx="150" cy="150" r="140" stroke="url(#heroGrad)" strokeWidth="2" fill="none" />
             <circle cx="150" cy="150" r="100" stroke="url(#heroGrad)" strokeWidth="1.5" fill="none" opacity="0.5" />
-            <circle cx="150" cy="150" r="60" stroke="url(#heroGrad)" strokeWidth="1" fill="none" opacity="0.3" />
             <defs>
               <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#5eead4" />
@@ -277,110 +311,78 @@ export default function PaginaInicial({
           <div className="absolute bottom-6 right-[25%] w-3 h-3 bg-cyan-300/15 rounded-full" />
         </div>
 
-        <div className="relative">
-          <div className="flex flex-wrap items-start justify-between gap-4 mb-2">
-            <div>
-              <p className="text-teal-200/70 text-sm font-medium mb-1">
-                Total {somenteEfetivadas ? 'Liberado' : 'Planejado'} ({dadosFiltrados.labelPeriodo})
-              </p>
-              <p className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight animate-fade-in-up">
-                {formatarMoeda(dadosFiltrados.total)}
-              </p>
+        <div className="relative grid grid-cols-1 lg:grid-cols-5 gap-4 p-5 sm:p-6">
+          {/* Left: Values */}
+          <div className="lg:col-span-3">
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+              <div>
+                <p className="text-teal-200/70 text-xs font-medium mb-1">
+                  Total {somenteEfetivadas ? 'Liberado' : 'Planejado'} ({dadosFiltrados.labelPeriodo})
+                </p>
+                <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight animate-fade-in-up">
+                  {formatarMoeda(dadosFiltrados.total)}
+                </p>
+              </div>
+              <button
+                onClick={() => onEfetivadosChange && onEfetivadosChange(!somenteEfetivadas)}
+                className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
+                aria-label={somenteEfetivadas ? 'Alternar para valores planejados' : 'Alternar para valores liberados'}
+              >
+                {somenteEfetivadas ? (
+                  <ToggleRight className="w-5 h-5 text-teal-300" />
+                ) : (
+                  <ToggleLeft className="w-5 h-5 text-slate-400" />
+                )}
+                <span className="text-xs">{somenteEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
+              </button>
             </div>
-            <button
-              onClick={() => onEfetivadosChange && onEfetivadosChange(!somenteEfetivadas)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
-              aria-label={somenteEfetivadas ? 'Alternar para valores planejados' : 'Alternar para valores liberados'}
-            >
-              {somenteEfetivadas ? (
-                <ToggleRight className="w-5 h-5 text-teal-300" />
-              ) : (
-                <ToggleLeft className="w-5 h-5 text-slate-400" />
-              )}
-              <span>{somenteEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
-            </button>
+            <div className="flex flex-wrap gap-5 pt-3 mt-2 border-t border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-slate-300/60" />
+                <div>
+                  <p className="text-teal-200/50 text-xs">Estado</p>
+                  <p className="text-white text-base font-bold">{formatarMoedaCompacta(dadosFiltrados.totalEst)}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-teal-400" />
+                <div>
+                  <p className="text-teal-200/50 text-xs">Municípios</p>
+                  <p className="text-white text-base font-bold">{formatarMoedaCompacta(dadosFiltrados.totalMun)}</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-6 pt-4 mt-4 border-t border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-slate-300/60" />
-              <div>
-                <p className="text-teal-200/50 text-xs">Estado</p>
-                <p className="text-white text-lg font-bold">{formatarMoedaCompacta(dadosFiltrados.totalEst)}</p>
+
+          {/* Right: Narrative Box */}
+          <div className="lg:col-span-2 flex flex-col">
+            <div className="narrative-box flex-1 bg-gradient-to-br from-teal-400/15 to-cyan-400/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <div className="flex items-center gap-2 mb-2">
+                <BookOpen className="w-3.5 h-3.5 text-teal-300" />
+                <span className="text-teal-300 text-xs font-semibold uppercase tracking-wider">Em resumo</span>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-teal-400" />
-              <div>
-                <p className="text-teal-200/50 text-xs">Municipios</p>
-                <p className="text-white text-lg font-bold">{formatarMoedaCompacta(dadosFiltrados.totalMun)}</p>
-              </div>
+              <p className="text-white/90 text-sm leading-relaxed">
+                {textoNarrativo}
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* KPI Cards Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card hover className="p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-slate-500 text-sm font-medium">Entes Beneficiados</p>
-              <p className="text-3xl font-extrabold text-slate-800 mt-1 tracking-tight">
-                {muniF.length + (estadoVisivel ? 1 : 0)}
-              </p>
-              <p className="text-slate-400 text-sm mt-1">
-                {estadoVisivel ? '1 estado + ' : ''}{muniF.length} municipios
-              </p>
-            </div>
-            <div className="p-3 bg-teal-50 rounded-xl">
-              <MapPin className="w-5 h-5 text-teal-600" />
-            </div>
-          </div>
-        </Card>
-        <Card hover className="p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-slate-500 text-sm font-medium">Parlamentares</p>
-              <p className="text-3xl font-extrabold text-slate-800 mt-1 tracking-tight">{parlF.length}</p>
-              <p className="text-slate-400 text-sm mt-1">
-                {anoFiltro ? `Em ${anoFiltro}` : 'Total acumulado'}
-              </p>
-            </div>
-            <div className="p-3 bg-indigo-50 rounded-xl">
-              <Users className="w-5 h-5 text-indigo-600" />
-            </div>
-          </div>
-        </Card>
-        <Card hover className="p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-slate-500 text-sm font-medium">Demandas</p>
-              <p className="text-3xl font-extrabold text-slate-800 mt-1 tracking-tight">
-                {dados.totalPlanos || parlamentares.reduce((acc, p) => acc + p.planos.length, 0)}
-              </p>
-              <p className="text-slate-400 text-sm mt-1">Planos de acao</p>
-            </div>
-            <div className="p-3 bg-amber-50 rounded-xl">
-              <FileText className="w-5 h-5 text-amber-600" />
-            </div>
-          </div>
-        </Card>
-      </div>
-
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Bar Chart - Year Distribution */}
         <div className="lg:col-span-3">
-          <Card className="p-6 h-full">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <Card className="p-4 h-full">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-teal-500" />
-                <h3 className="text-lg font-bold text-slate-800">Por Ano</h3>
+                <TrendingUp className="w-4 h-4 text-teal-500" />
+                <h3 className="text-sm font-bold text-slate-800">Por Ano</h3>
               </div>
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex gap-1 flex-wrap">
                 <button
                   onClick={() => onAnoChange(null)}
-                  className={`filter-chip px-3 py-1.5 text-sm rounded-lg font-medium ${
+                  className={`filter-chip px-2.5 py-1 text-xs rounded-lg font-medium ${
                     !anoFiltro ? 'filter-chip-active' : 'bg-slate-100 text-slate-600'
                   }`}
                 >
@@ -390,7 +392,7 @@ export default function PaginaInicial({
                   <button
                     key={a}
                     onClick={() => onAnoChange(a)}
-                    className={`filter-chip px-3 py-1.5 text-sm rounded-lg font-medium ${
+                    className={`filter-chip px-2.5 py-1 text-xs rounded-lg font-medium ${
                       anoFiltro === a ? 'filter-chip-active' : 'bg-slate-100 text-slate-600'
                     }`}
                   >
@@ -400,18 +402,18 @@ export default function PaginaInicial({
               </div>
             </div>
 
-            <div className="flex gap-4 mb-5">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded bg-slate-400" />
+            <div className="flex gap-3 mb-3">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded bg-slate-400" />
                 <span className="text-xs text-slate-500">Estado</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded" style={{ background: 'linear-gradient(90deg, #0d9488, #06b6d4)' }} />
-                <span className="text-xs text-slate-500">Municipios</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded" style={{ background: 'linear-gradient(90deg, #0d9488, #06b6d4)' }} />
+                <span className="text-xs text-slate-500">Municípios</span>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {anos.map(ano => {
                 const vEstado = somenteEfetivadas
                   ? (porAnoEstadoEfetivado?.[ano] || 0)
@@ -429,7 +431,7 @@ export default function PaginaInicial({
                   <div
                     key={ano}
                     onClick={() => onAnoChange(anoFiltro === ano ? null : ano)}
-                    className={`cursor-pointer transition-all rounded-xl p-2.5 -mx-2.5 ${
+                    className={`cursor-pointer transition-all rounded-lg p-1.5 -mx-1.5 ${
                       isSelected ? 'bg-teal-50 ring-2 ring-teal-400' : 'hover:bg-slate-50'
                     }`}
                     role="button"
@@ -437,14 +439,14 @@ export default function PaginaInicial({
                     aria-label={`Ano ${ano}: ${formatarMoedaCompacta(vTotal)}`}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onAnoChange(anoFiltro === ano ? null : ano); } }}
                   >
-                    <div className="flex items-center gap-4">
-                      <span className={`text-sm font-bold w-12 ${isSelected ? 'text-teal-700' : 'text-slate-600'}`}>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-bold w-10 ${isSelected ? 'text-teal-700' : 'text-slate-600'}`}>
                         {ano}
                       </span>
                       <div className="flex-1 relative">
-                        <div className="h-10 bg-slate-100 rounded-xl overflow-hidden">
+                        <div className="h-7 bg-slate-100 rounded-lg overflow-hidden">
                           <div
-                            className="h-full rounded-xl flex"
+                            className="h-full rounded-lg flex"
                             style={{ width: Math.max(pTotal, 18) + '%' }}
                           >
                             {pEstado > 0 && (
@@ -464,10 +466,10 @@ export default function PaginaInicial({
                             )}
                           </div>
                           <div
-                            className="absolute inset-y-0 flex items-center justify-end pr-3"
+                            className="absolute inset-y-0 flex items-center justify-end pr-2"
                             style={{ width: Math.max(pTotal, 18) + '%' }}
                           >
-                            <span className="text-sm font-bold text-white drop-shadow-sm">
+                            <span className="text-xs font-bold text-white drop-shadow-sm">
                               {formatarMoedaCompacta(vTotal)}
                             </span>
                           </div>
@@ -479,18 +481,18 @@ export default function PaginaInicial({
               })}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
               <span className="text-sm font-bold text-slate-600">Total</span>
-              <span className="text-xl font-extrabold text-slate-800">{formatarMoedaCompacta(dadosFiltrados.total)}</span>
+              <span className="text-lg font-extrabold text-slate-800">{formatarMoedaCompacta(dadosFiltrados.total)}</span>
             </div>
           </Card>
         </div>
 
         {/* Donut Chart - Area Distribution */}
         <div className="lg:col-span-2">
-          <Card className="p-6 h-full">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-slate-800">Distribuicao por Area</h3>
+          <Card className="p-4 h-full">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-800">Por Área</h3>
               {areaFiltro && (
                 <button
                   onClick={() => onAreaChange && onAreaChange(null)}
@@ -500,7 +502,7 @@ export default function PaginaInicial({
                 </button>
               )}
             </div>
-            <div className="relative w-40 h-40 mx-auto mb-5">
+            <div className="relative w-28 h-28 mx-auto mb-3">
               <svg viewBox="0 0 100 100" className="w-full h-full" style={{ transform: 'rotate(-90deg)' }}>
                 {segs.map((s, i) => {
                   const r = 38;
@@ -521,22 +523,22 @@ export default function PaginaInicial({
                     />
                   );
                 })}
-                <text x="50" y="46" textAnchor="middle" className="fill-slate-800" style={{ fontSize: '8px', fontWeight: 800, transform: 'rotate(90deg)', transformOrigin: '50px 50px' }}>
+                <text x="50" y="46" textAnchor="middle" className="fill-slate-800" style={{ fontSize: '9px', fontWeight: 800, transform: 'rotate(90deg)', transformOrigin: '50px 50px' }}>
                   {formatarMoedaCompacta(tFins)}
                 </text>
-                <text x="50" y="56" textAnchor="middle" className="fill-slate-400" style={{ fontSize: '4px', transform: 'rotate(90deg)', transformOrigin: '50px 50px' }}>
+                <text x="50" y="57" textAnchor="middle" className="fill-slate-400" style={{ fontSize: '4.5px', transform: 'rotate(90deg)', transformOrigin: '50px 50px' }}>
                   Total
                 </text>
               </svg>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {dadosArea.map(([f, v], i) => {
                 const isSelected = areaFiltro === f;
                 return (
                   <div
                     key={f}
                     onClick={() => onAreaChange && onAreaChange(areaFiltro === f ? null : f)}
-                    className={`flex items-center gap-3 cursor-pointer p-2 -mx-2 rounded-xl transition-all ${
+                    className={`flex items-center gap-2 cursor-pointer p-1.5 -mx-1.5 rounded-lg transition-all ${
                       isSelected ? 'bg-teal-50 ring-2 ring-teal-400' : 'hover:bg-slate-50'
                     }`}
                     role="button"
@@ -544,11 +546,11 @@ export default function PaginaInicial({
                     aria-label={`${f}: ${tFins > 0 ? ((v / tFins) * 100).toFixed(0) : 0}%`}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onAreaChange && onAreaChange(areaFiltro === f ? null : f); } }}
                   >
-                    <div className={'w-3 h-3 rounded-full flex-shrink-0 ' + (cores[i]?.bg || 'bg-slate-400')} />
-                    <span className={`text-sm flex-1 truncate ${isSelected ? 'text-teal-700 font-semibold' : 'text-slate-600'}`}>
+                    <div className={'w-2.5 h-2.5 rounded-full flex-shrink-0 ' + (cores[i]?.bg || 'bg-slate-400')} />
+                    <span className={`text-xs flex-1 truncate ${isSelected ? 'text-teal-700 font-semibold' : 'text-slate-600'}`}>
                       {f}
                     </span>
-                    <span className={`text-sm font-bold ${isSelected ? 'text-teal-700' : 'text-slate-800'}`}>
+                    <span className={`text-xs font-bold ${isSelected ? 'text-teal-700' : 'text-slate-800'}`}>
                       {tFins > 0 ? ((v / tFins) * 100).toFixed(0) : 0}%
                     </span>
                   </div>
@@ -562,58 +564,58 @@ export default function PaginaInicial({
       {/* Active Filters Badge */}
       {(anoFiltro || areaFiltro || !somenteEfetivadas) && (
         <div className="flex items-center gap-2 flex-wrap animate-fade-in">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-sm text-slate-500 font-medium">Filtros ativos:</span>
+          <Filter className="w-3.5 h-3.5 text-slate-400" />
+          <span className="text-xs text-slate-500 font-medium">Filtros:</span>
           {anoFiltro && (
-            <span className="px-3 py-1 bg-teal-100 text-teal-700 text-xs rounded-full font-semibold">
+            <span className="px-2.5 py-0.5 bg-teal-100 text-teal-700 text-xs rounded-full font-semibold">
               {anoFiltro}
             </span>
           )}
           {areaFiltro && (
-            <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-semibold">
+            <span className="px-2.5 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full font-semibold">
               {areaFiltro}
             </span>
           )}
-          <span className="px-3 py-1 bg-slate-100 text-slate-600 text-xs rounded-full font-semibold">
+          <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full font-semibold">
             {somenteEfetivadas ? 'Liberados' : 'Planejados'}
           </span>
         </div>
       )}
 
       {/* Entity & Parliamentary Lists */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Entities */}
         <Card className="overflow-hidden flex flex-col">
-          <div className="p-5 border-b border-teal-50">
-            <div className="flex items-center justify-between mb-3">
+          <div className="p-4 border-b border-teal-50">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-teal-600" />
-                <h3 className="text-base font-bold text-slate-800">Por Ente Beneficiario</h3>
+                <Building2 className="w-4 h-4 text-teal-600" />
+                <h3 className="text-sm font-bold text-slate-800">Por Ente Beneficiário</h3>
               </div>
               <span className="text-xs text-slate-400 font-medium">{muniF.length + (estadoVisivel ? 1 : 0)} entes</span>
             </div>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Buscar ente..."
                 value={buscaE}
                 onChange={e => setBuscaE(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 border border-transparent focus:border-teal-200 transition-all"
-                aria-label="Buscar ente beneficiario"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 border border-transparent focus:border-teal-200 transition-all"
+                aria-label="Buscar ente beneficiário"
               />
             </div>
           </div>
           {estadoVisivel && estado && (
             <div
               onClick={() => onEnte(estado)}
-              className="p-4 cursor-pointer list-item-hover border-b border-teal-50 flex items-center gap-3 group"
+              className="px-4 py-2.5 cursor-pointer list-item-hover border-b border-teal-50 flex items-center gap-3 group"
               role="button"
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter') onEnte(estado); }}
             >
-              <div className="p-2.5 bg-gradient-to-br from-[#115e59] to-[#134e4a] rounded-xl">
-                <Landmark className="w-4 h-4 text-teal-300" />
+              <div className="p-2 bg-gradient-to-br from-[#115e59] to-[#134e4a] rounded-lg">
+                <Landmark className="w-3.5 h-3.5 text-teal-300" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-slate-800 text-sm">Governo do Estado</p>
@@ -625,13 +627,13 @@ export default function PaginaInicial({
               <p className="font-bold text-slate-800 text-sm">
                 {formatarMoedaCompacta(calcularValorEnte(estado))}
               </p>
-              <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
+              <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
             </div>
           )}
-          <div className="flex-1 overflow-y-auto max-h-72">
+          <div className="flex-1 overflow-y-auto max-h-64">
             {muniF.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-sm">
-                Nenhum municipio encontrado com os filtros selecionados
+              <div className="p-6 text-center text-slate-400 text-sm">
+                Nenhum município encontrado com os filtros selecionados
               </div>
             ) : (
               muniF.map((m, i) => {
@@ -641,13 +643,13 @@ export default function PaginaInicial({
                   <div
                     key={m.id}
                     onClick={() => onEnte(m)}
-                    className={'p-4 cursor-pointer list-item-hover flex items-center gap-3 group ' + (i < muniF.length - 1 ? 'border-b border-teal-50/50' : '')}
+                    className={'px-4 py-2.5 cursor-pointer list-item-hover flex items-center gap-3 group ' + (i < muniF.length - 1 ? 'border-b border-teal-50/50' : '')}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => { if (e.key === 'Enter') onEnte(m); }}
                   >
-                    <div className="p-2.5 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-xl">
-                      <Building className="w-4 h-4 text-white" />
+                    <div className="p-2 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-lg">
+                      <Building className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-slate-800 text-sm">{m.nome}</p>
@@ -657,7 +659,7 @@ export default function PaginaInicial({
                       </p>
                     </div>
                     <p className="font-bold text-slate-800 text-sm">{formatarMoedaCompacta(valor)}</p>
-                    <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-teal-500 group-hover:translate-x-1 transition-all" />
                   </div>
                 );
               })
@@ -667,29 +669,29 @@ export default function PaginaInicial({
 
         {/* Parliamentary Members */}
         <Card className="overflow-hidden flex flex-col">
-          <div className="p-5 border-b border-teal-50">
-            <div className="flex items-center justify-between mb-3">
+          <div className="p-4 border-b border-teal-50">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-base font-bold text-slate-800">Por Parlamentar</h3>
+                <Users className="w-4 h-4 text-indigo-600" />
+                <h3 className="text-sm font-bold text-slate-800">Por Parlamentar</h3>
               </div>
               <span className="text-xs text-slate-400 font-medium">{parlF.length} parlamentares</span>
             </div>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               <input
                 type="text"
                 placeholder="Buscar parlamentar..."
                 value={buscaP}
                 onChange={e => setBuscaP(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 border border-transparent focus:border-indigo-200 transition-all"
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 border border-transparent focus:border-indigo-200 transition-all"
                 aria-label="Buscar parlamentar"
               />
             </div>
           </div>
-          <div className="flex-1 overflow-y-auto max-h-80">
+          <div className="flex-1 overflow-y-auto max-h-64">
             {parlF.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 text-sm">
+              <div className="p-6 text-center text-slate-400 text-sm">
                 Nenhum parlamentar encontrado com os filtros selecionados
               </div>
             ) : (
@@ -711,7 +713,7 @@ export default function PaginaInicial({
                   <div
                     key={p.nome}
                     onClick={() => onParlamentar(p)}
-                    className={'p-4 cursor-pointer list-item-hover flex items-center gap-3 group ' + (i < parlF.length - 1 ? 'border-b border-teal-50/50' : '')}
+                    className={'px-4 py-2.5 cursor-pointer list-item-hover flex items-center gap-3 group ' + (i < parlF.length - 1 ? 'border-b border-teal-50/50' : '')}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => { if (e.key === 'Enter') onParlamentar(p); }}
@@ -720,15 +722,15 @@ export default function PaginaInicial({
                       <img
                         src={fotoUrl}
                         alt={p.nome}
-                        className="w-10 h-10 rounded-xl object-cover shadow-sm flex-shrink-0"
+                        className="w-9 h-9 rounded-lg object-cover shadow-sm flex-shrink-0"
                         onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
                       />
                     ) : null}
                     <div
-                      className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-sm flex-shrink-0"
+                      className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg shadow-sm flex-shrink-0"
                       style={fotoUrl ? { display: 'none' } : undefined}
                     >
-                      <Users className="w-4 h-4 text-white" />
+                      <Users className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-slate-800 text-sm">{p.nome}</p>
@@ -738,7 +740,7 @@ export default function PaginaInicial({
                       </p>
                     </div>
                     <p className="font-bold text-slate-800 text-sm">{formatarMoedaCompacta(valor)}</p>
-                    <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all" />
                   </div>
                 );
               })

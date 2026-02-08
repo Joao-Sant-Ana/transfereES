@@ -175,6 +175,24 @@ body {
 }
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 
+.narrative-box {
+  position: relative;
+  overflow: hidden;
+}
+.narrative-box::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at center, rgba(94, 234, 212, 0.08), transparent 70%);
+  pointer-events: none;
+}
+.narrative-box p {
+  transition: opacity var(--transition-base);
+}
+
 @media (max-width: 640px) {
   body { font-size: 14px; }
 }
