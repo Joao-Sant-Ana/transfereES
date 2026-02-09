@@ -164,7 +164,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
         <div className="relative p-5 sm:p-6">
           <BtnVoltar onClick={onVoltar} texto="Voltar a visao geral" light />
 
-          <div className="flex flex-wrap items-center gap-4 mt-1">
+          <div className="flex flex-wrap items-center gap-4 mt-1 mb-4">
             {fotoUrl ? (
               <img
                 src={fotoUrl}
@@ -185,51 +185,57 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-indigo-200/70 text-xs font-medium mb-1">
-                Total {mostrarEfetivadas ? 'Liberado' : 'Planejado'} ({labelPeriodo})
-              </p>
-              <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                {formatarMoeda(total)}
-              </p>
-            </div>
-            <button
-              onClick={() => setMostrarEfetivadas(!mostrarEfetivadas)}
-              className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
-            >
-              {mostrarEfetivadas ? <ToggleRight className="w-5 h-5 text-indigo-300" /> : <ToggleLeft className="w-5 h-5 text-slate-400" />}
-              <span className="text-xs">{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
-            </button>
-          </div>
-
-          {/* Estado / Municípios breakdown */}
-          <div className="flex flex-wrap gap-5 pt-3 mt-3 border-t border-white/10">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-indigo-300/60" />
-              <div>
-                <p className="text-indigo-200/50 text-xs">Estado</p>
-                <p className="text-white text-base font-bold">{formatarMoedaCompacta(totalEstadoParl)}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+            {/* Left: Values + breakdown */}
+            <div className="lg:col-span-3">
+              <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
+                <div>
+                  <p className="text-indigo-200/70 text-xs font-medium mb-1">
+                    Total {mostrarEfetivadas ? 'Liberado' : 'Planejado'} ({labelPeriodo})
+                  </p>
+                  <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                    {formatarMoeda(total)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setMostrarEfetivadas(!mostrarEfetivadas)}
+                  className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
+                >
+                  {mostrarEfetivadas ? <ToggleRight className="w-5 h-5 text-indigo-300" /> : <ToggleLeft className="w-5 h-5 text-slate-400" />}
+                  <span className="text-xs">{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
+                </button>
+              </div>
+              {/* Estado / Municípios breakdown */}
+              <div className="flex flex-wrap gap-5 pt-3 mt-2 border-t border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-300/60" />
+                  <div>
+                    <p className="text-indigo-200/50 text-xs">Estado</p>
+                    <p className="text-white text-base font-bold">{formatarMoedaCompacta(totalEstadoParl)}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-violet-400" />
+                  <div>
+                    <p className="text-indigo-200/50 text-xs">Municipios</p>
+                    <p className="text-white text-base font-bold">{formatarMoedaCompacta(totalMunicipiosParl)}</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-violet-400" />
-              <div>
-                <p className="text-indigo-200/50 text-xs">Municipios</p>
-                <p className="text-white text-base font-bold">{formatarMoedaCompacta(totalMunicipiosParl)}</p>
+
+            {/* Right: Narrative "Em resumo" */}
+            <div className="lg:col-span-2 flex flex-col">
+              <div className="narrative-box flex-1 bg-gradient-to-br from-indigo-400/15 to-violet-400/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen className="w-3.5 h-3.5 text-indigo-300" />
+                  <span className="text-indigo-300 text-xs font-semibold uppercase tracking-wider">Em resumo</span>
+                </div>
+                <p className="text-white/90 text-sm leading-relaxed">
+                  {textoNarrativo}
+                </p>
               </div>
             </div>
-          </div>
-
-          {/* Narrative "Em resumo" */}
-          <div className="mt-4 narrative-box bg-gradient-to-br from-indigo-400/15 to-violet-400/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-            <div className="flex items-center gap-2 mb-1">
-              <BookOpen className="w-3.5 h-3.5 text-indigo-300" />
-              <span className="text-indigo-300 text-xs font-semibold uppercase tracking-wider">Em resumo</span>
-            </div>
-            <p className="text-white/85 text-sm leading-relaxed">
-              {textoNarrativo}
-            </p>
           </div>
         </div>
       </div>
