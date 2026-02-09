@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, Building2, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, BookOpen } from 'lucide-react';
+import { TrendingUp, Building2, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, BookOpen, Calendar, User, MapPin, Tag } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { BtnVoltar, Loading } from '../components/ui';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
 import { getSituacaoTrabalho } from '../utils/helpers';
 import { fetchEnteCompleto } from '../services/api';
+import { getBrasaoUrl } from '../utils/entityImages';
 
 export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfetivadas, onVoltar, onExec }) {
   const [ano, setAno] = useState(anoInicial || null);
@@ -12,6 +13,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
   const [enteCompleto, setEnteCompleto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mostrarEfetivadas, setMostrarEfetivadas] = useState(somenteEfetivadas);
+  const [brasaoErr, setBrasaoErr] = useState(false);
 
   useEffect(() => {
     async function carregarExecutores() {
@@ -29,6 +31,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
   }, [ente]);
 
   const anosD = Object.keys(ente.anos).sort();
+  const brasaoUrl = getBrasaoUrl(ente.nome);
 
   const total = useMemo(() => {
     if (ano) {
@@ -129,6 +132,21 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
 
   const labelPeriodo = ano ? ano : `${anosD[0]}-${anosD[anosD.length - 1]}`;
 
+  const nomeExibicao = useMemo(() => {
+    let n = ente.nome;
+    n = n.replace(/^MUNICIPIO DE\s+/i, '');
+    n = n.replace(/^ESTADO D[OE]\s+/i, '');
+    return n;
+  }, [ente.nome]);
+
+  const textoNarrativo = useMemo(() => {
+    const tipo = mostrarEfetivadas ? 'liberados' : 'planejados';
+    const partePeriodo = ano ? `Em ${ano}` : `Entre ${labelPeriodo}`;
+    const areas = dadosArea.slice(0, 3).map(([f]) => f).join(', ');
+
+    return `${partePeriodo}, ${nomeExibicao} recebeu um total de ${formatarMoeda(total)} em recursos ${tipo} de Transferências Especiais. ${numParlamentares} parlamentar${numParlamentares !== 1 ? 'es' : ''} destinaram recursos para ${numProjetos} projeto${numProjetos !== 1 ? 's' : ''}${areas ? `, nas áreas de ${areas}` : ''}. Confira abaixo o detalhamento de cada projeto.`;
+  }, [nomeExibicao, total, numParlamentares, numProjetos, dadosArea, labelPeriodo, ano, mostrarEfetivadas]);
+
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Hero Context Card */}
@@ -148,12 +166,21 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
           <BtnVoltar onClick={onVoltar} texto="Voltar a visao geral" light />
 
           <div className="flex flex-wrap items-center gap-4 mt-1">
-            <div className={'p-3 rounded-2xl border border-white/20 ' + (ente.tipo === 'estado' ? 'bg-white/10' : 'bg-white/10')}>
-              {ente.tipo === 'estado'
-                ? <Landmark className="w-7 h-7 text-teal-300" />
-                : <Building className="w-7 h-7 text-teal-300" />
-              }
-            </div>
+            {brasaoUrl && !brasaoErr ? (
+              <img
+                src={brasaoUrl}
+                alt={`Brasão de ${nomeExibicao}`}
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-contain bg-white/10 p-1.5 border border-white/20"
+                onError={() => setBrasaoErr(true)}
+              />
+            ) : (
+              <div className={'p-3 rounded-2xl border border-white/20 bg-white/10'}>
+                {ente.tipo === 'estado'
+                  ? <Landmark className="w-7 h-7 text-teal-300" />
+                  : <Building className="w-7 h-7 text-teal-300" />
+                }
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">{ente.nome}</h2>
               <p className="text-teal-200/60 text-sm">CNPJ: {ente.cnpj}</p>
@@ -178,14 +205,14 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
             </button>
           </div>
 
-          {/* Context narrative */}
-          <div className="mt-4 bg-gradient-to-br from-teal-400/15 to-cyan-400/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+          {/* Narrative "Em resumo" */}
+          <div className="mt-4 narrative-box bg-gradient-to-br from-teal-400/15 to-cyan-400/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="w-3.5 h-3.5 text-teal-300" />
-              <span className="text-teal-300 text-xs font-semibold uppercase tracking-wider">Contexto</span>
+              <span className="text-teal-300 text-xs font-semibold uppercase tracking-wider">Em resumo</span>
             </div>
             <p className="text-white/85 text-sm leading-relaxed">
-              {numParlamentares} parlamentar{numParlamentares !== 1 ? 'es' : ''} {numParlamentares !== 1 ? 'alocaram' : 'alocou'} recursos para este ente em {numProjetos} projeto{numProjetos !== 1 ? 's' : ''}{dadosArea.length > 0 ? `, nas áreas de ${dadosArea.slice(0, 3).map(([f]) => f).join(', ')}` : ''}.
+              {textoNarrativo}
             </p>
           </div>
         </div>
@@ -330,7 +357,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
         </div>
       </div>
 
-      {/* Executor Projects */}
+      {/* Executor Projects - Numbered Blocks */}
       <Card className="overflow-hidden">
         <div className="p-4 border-b border-teal-50 bg-gradient-to-r from-teal-50/50 to-white">
           <div className="flex items-center gap-3">
@@ -353,40 +380,59 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
             Nenhum executor encontrado para este filtro.
           </div>
         ) : (
-          <div className="divide-y divide-teal-50/80">
+          <div className="divide-y divide-slate-100">
             {execs.map((ex, i) => {
               const sit = getSituacaoTrabalho(ex.situacao_plano_trabalho);
               return (
                 <div
                   key={ex.id + '-' + i}
                   onClick={() => onExec(ex)}
-                  className="p-4 cursor-pointer group hover:bg-teal-50/50 transition-colors"
+                  className="p-4 cursor-pointer group hover:bg-teal-50/30 transition-all"
                 >
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <p className="font-medium text-slate-800 text-sm leading-snug flex-1 group-hover:text-teal-700 transition-colors">
-                      {ex.detalhamento_objeto || ex.objeto || 'Objeto nao informado'}
-                    </p>
-                    <div className="text-right flex-shrink-0 ml-2">
-                      <p className="text-base font-extrabold text-teal-700">{formatarMoedaCompacta(ex.vT)}</p>
-                      <p className="text-xs text-slate-400">{mostrarEfetivadas ? 'liberado' : 'planejado'}</p>
+                  <div className="flex gap-3">
+                    {/* Large number badge */}
+                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-xl flex items-center justify-center font-extrabold text-sm shadow-sm">
+                      #{i + 1}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                    <span className="text-slate-500 font-medium">{ex.nome}</span>
-                    <span className="text-slate-300">•</span>
-                    <span className={'px-2 py-0.5 rounded-full font-medium ' + sit.bg + ' ' + sit.cor}>{sit.label}</span>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-slate-500">{ex.plano.ano}</span>
-                    {ex.plano.parlamentar && (
-                      <>
-                        <span className="text-slate-300">•</span>
-                        <span className="text-slate-500">{ex.plano.parlamentar}</span>
-                      </>
-                    )}
-                    {ex.plano.area_politica && (
-                      <span className="text-teal-600 font-medium bg-teal-50 px-2 py-0.5 rounded-full">{ex.plano.area_politica}</span>
-                    )}
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-teal-500 ml-auto flex-shrink-0 transition-all" />
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <p className="font-semibold text-slate-800 text-sm leading-snug flex-1 group-hover:text-teal-700 transition-colors">
+                          {ex.detalhamento_objeto || ex.objeto || 'Objeto nao informado'}
+                        </p>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-base font-extrabold text-teal-700">{formatarMoedaCompacta(ex.vT)}</p>
+                          <p className="text-[10px] text-slate-400">{mostrarEfetivadas ? 'liberado' : 'planejado'}</p>
+                        </div>
+                      </div>
+
+                      {/* Chips row */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
+                          <Calendar className="w-3 h-3" />
+                          {ex.plano.ano}
+                        </span>
+                        {ex.plano.parlamentar && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-xs font-medium">
+                            <User className="w-3 h-3" />
+                            {ex.plano.parlamentar}
+                          </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">
+                          <MapPin className="w-3 h-3" />
+                          {ex.nome}
+                        </span>
+                        {ex.plano.area_politica && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs font-medium">
+                            <Tag className="w-3 h-3" />
+                            {ex.plano.area_politica}
+                          </span>
+                        )}
+                        <span className={'px-2 py-0.5 rounded-md text-xs font-medium ' + sit.bg + ' ' + sit.cor}>{sit.label}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-teal-500 ml-auto flex-shrink-0 transition-all group-hover:translate-x-0.5" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
