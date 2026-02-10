@@ -3,6 +3,7 @@ import { Search, TrendingUp, Building2, Users, Landmark, Building, ArrowRight, T
 import Card from '../components/ui/Card';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
 import { getFotoParlamentar } from '../utils/deputyPhotos';
+import { getBrasaoUrl } from '../utils/entityImages';
 
 export default function PaginaInicial({
   dados,
@@ -621,7 +622,18 @@ export default function PaginaInicial({
               tabIndex={0}
               onKeyDown={(e) => { if (e.key === 'Enter') onEnte(estado); }}
             >
-              <div className="p-2 bg-gradient-to-br from-[#115e59] to-[#134e4a] rounded-lg">
+              {getBrasaoUrl('GOVERNO DO ESTADO') ? (
+                <img
+                  src={getBrasaoUrl('GOVERNO DO ESTADO')}
+                  alt="Governo do Estado"
+                  className="w-9 h-9 rounded-lg object-contain bg-white p-0.5 border border-slate-200 shadow-sm flex-shrink-0"
+                  onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
+                />
+              ) : null}
+              <div
+                className="p-2 bg-gradient-to-br from-[#115e59] to-[#134e4a] rounded-lg flex-shrink-0"
+                style={getBrasaoUrl('GOVERNO DO ESTADO') ? { display: 'none' } : undefined}
+              >
                 <Landmark className="w-3.5 h-3.5 text-teal-300" />
               </div>
               <div className="flex-1 min-w-0">
@@ -655,7 +667,18 @@ export default function PaginaInicial({
                     tabIndex={0}
                     onKeyDown={(e) => { if (e.key === 'Enter') onEnte(m); }}
                   >
-                    <div className="p-2 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-lg">
+                    {getBrasaoUrl(m.nome) ? (
+                      <img
+                        src={getBrasaoUrl(m.nome)}
+                        alt={m.nome}
+                        className="w-9 h-9 rounded-lg object-contain bg-white p-0.5 border border-slate-200 shadow-sm flex-shrink-0"
+                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
+                      />
+                    ) : null}
+                    <div
+                      className="p-2 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-lg flex-shrink-0"
+                      style={getBrasaoUrl(m.nome) ? { display: 'none' } : undefined}
+                    >
                       <Building className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">

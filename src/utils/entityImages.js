@@ -1,64 +1,84 @@
 /**
- * Mapeamento de entes do ES para imagens de brasão.
+ * Mapeamento de entes do ES para imagens (bandeiras e brasões).
  *
  * Fonte: Wikimedia Commons - URLs de thumbnail pré-computadas.
- * Padrão: https://upload.wikimedia.org/wikipedia/commons/thumb/{md5[0]}/{md5[0:2]}/{arquivo}/{width}px-{arquivo}[.png]
+ * Padrão: upload.wikimedia.org/wikipedia/commons/thumb/{md5[0]}/{md5[0:2]}/{arquivo}/{width}px-{arquivo}
+ * Categoria: Flags of municipalities of Espírito Santo
  *
  * Quando a imagem não carregar, o componente deve usar onError para fallback.
  */
 
-// URLs pré-computadas de thumbnails diretos (sem redirects)
-const brasoes = {
+// Bandeiras dos municípios do ES (Wikimedia Commons)
+const bandeiras = {
+  'afonso claudio': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/Bandeira%20afonso%20claudio.png/100px-Bandeira%20afonso%20claudio.png',
+  'agua doce do norte': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Es-agua-doce-do-norte-bandeira-N0sKIP8h.png/100px-Es-agua-doce-do-norte-bandeira-N0sKIP8h.png',
+  'aguia branca': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Bandeiraaguiabranca.png/100px-Bandeiraaguiabranca.png',
+  'alegre': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Bandeira%20de%20Alegre%20%28Esp%C3%ADrito%20Santo%29.png/100px-Bandeira%20de%20Alegre%20%28Esp%C3%ADrito%20Santo%29.png',
+  'alfredo chaves': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Bandeira%20de%20Alfredo%20Chaves%20%28Esp%C3%ADrito%20Santo%29.gif/100px-Bandeira%20de%20Alfredo%20Chaves%20%28Esp%C3%ADrito%20Santo%29.gif',
+  'alto rio novo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Bandeira%20Alto%20Rio%20Novo.jpg/100px-Bandeira%20Alto%20Rio%20Novo.jpg',
+  'anchieta': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/BandeiradoMunicipio%20anchieta.jpg/100px-BandeiradoMunicipio%20anchieta.jpg',
+  'apiaca': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Es-apiaca-bandeira-hnFJQv46.jpg/100px-Es-apiaca-bandeira-hnFJQv46.jpg',
+  'aracruz': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Bandeira%20aracruz%20es.png/100px-Bandeira%20aracruz%20es.png',
+  'atilio vivacqua': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/At%C3%ADlio%20Vivacqua.jpg/100px-At%C3%ADlio%20Vivacqua.jpg',
+  'baixo guandu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Flag%20of%20Baixo%20Guandu%20ES.png/100px-Flag%20of%20Baixo%20Guandu%20ES.png',
+  'boa esperanca': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Bandeira%20de%20Boa%20Esperan%C3%A7a%20ES.svg/100px-Bandeira%20de%20Boa%20Esperan%C3%A7a%20ES.svg.png',
+  'bom jesus do norte': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Bandeira%20de%20Bom%20Jesus%20do%20Norte%20%28Esp%C3%ADrito%20Santo%29.gif/100px-Bandeira%20de%20Bom%20Jesus%20do%20Norte%20%28Esp%C3%ADrito%20Santo%29.gif',
+  'cachoeiro de itapemirim': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Bandeira%20Cachoeiro%20de%20Itapemirim.png/100px-Bandeira%20Cachoeiro%20de%20Itapemirim.png',
+  'cariacica': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Bandeira-cariacica.jpg/100px-Bandeira-cariacica.jpg',
+  'castelo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Bandeira%20de%20castelo%20es.png/100px-Bandeira%20de%20castelo%20es.png',
+  'colatina': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Bandeira-colatina.png/100px-Bandeira-colatina.png',
+  'conceicao da barra': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Bandeiraconceicao.jpg/100px-Bandeiraconceicao.jpg',
+  'conceicao do castelo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Bandeira%20concei%C3%A7%C3%A3o%20do%20castelo.jpg/100px-Bandeira%20concei%C3%A7%C3%A3o%20do%20castelo.jpg',
+  'divino de sao lourenco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Bandeira-divino-de-sao-lourenco.webp/100px-Bandeira-divino-de-sao-lourenco.webp.jpg',
+  'domingos martins': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/BandeiraDomingosMartinsES.jpg/100px-BandeiraDomingosMartinsES.jpg',
+  'ecoporanga': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Bandeira-ecoporanga.png/100px-Bandeira-ecoporanga.png',
+  'fundao': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Flag%20of%20Fund%C3%A3o.PNG/100px-Flag%20of%20Fund%C3%A3o.PNG',
+  'governador lindenberg': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Bandeira%20de%20Governador%20Lindenberg%20Esp%C3%ADrito%20Santo.png/100px-Bandeira%20de%20Governador%20Lindenberg%20Esp%C3%ADrito%20Santo.png',
+  'guacui': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/BandeiraGuacuiES.jpg/100px-BandeiraGuacuiES.jpg',
+  'guarapari': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Bandeira%20nova%20de%20Guarapari.png/100px-Bandeira%20nova%20de%20Guarapari.png',
+  'ibiracu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Bandeira%20de%20Ibira%C3%A7u%20%28Esp%C3%ADrito%20Santo%29.png/100px-Bandeira%20de%20Ibira%C3%A7u%20%28Esp%C3%ADrito%20Santo%29.png',
+  'ibitirama': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Bandeira-ibitirama%20275e82cc-75d5-4011-96dd-140981ebcbb3.webp/100px-Bandeira-ibitirama%20275e82cc-75d5-4011-96dd-140981ebcbb3.webp.jpg',
+  'iconha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Bandeira-iconha.jpg/100px-Bandeira-iconha.jpg',
+  'irupi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Irupi%20flag.png/100px-Irupi%20flag.png',
+  'itaguacu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Bandeira%20de%20Itagua%C3%A7u%20%28Esp%C3%ADrito%20Santo%29.jpg/100px-Bandeira%20de%20Itagua%C3%A7u%20%28Esp%C3%ADrito%20Santo%29.jpg',
+  'itapemirim': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Bandeira%20Itapemirim.png/100px-Bandeira%20Itapemirim.png',
+  'iuna': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Bandeira%20de%20I%C3%BAna%20%28Esp%C3%ADrito%20Santo%29.jpg/100px-Bandeira%20de%20I%C3%BAna%20%28Esp%C3%ADrito%20Santo%29.jpg',
+  'jeronimo monteiro': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Bandeira%20de%20Jer%C3%B4nimo%20Monteiro%20%28Esp%C3%ADrito%20Santo%29.jpg/100px-Bandeira%20de%20Jer%C3%B4nimo%20Monteiro%20%28Esp%C3%ADrito%20Santo%29.jpg',
+  'joao neiva': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Bandeira%20joaoneiva.jpg/100px-Bandeira%20joaoneiva.jpg',
+  'linhares': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Bandeira%20linhares.png/100px-Bandeira%20linhares.png',
+  'mantenopolis': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Bandeira-Manten%C3%B3polis.png/100px-Bandeira-Manten%C3%B3polis.png',
+  'marataizes': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Bandeira-marataizes.jpg/100px-Bandeira-marataizes.jpg',
+  'marechal floriano': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Bandeira-cidade-marechal-floriano-es-300x218.png/100px-Bandeira-cidade-marechal-floriano-es-300x218.png',
+  'marilandia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Bandeira-maril%C3%A2ndia.png/100px-Bandeira-maril%C3%A2ndia.png',
+  'mimoso do sul': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Flag%20of%20Mimoso%20do%20Sul%20-%20ES%20-%20Brazil.png/100px-Flag%20of%20Mimoso%20do%20Sul%20-%20ES%20-%20Brazil.png',
+  'montanha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/BANDEIRA%20DE%20MONTANHA.jpg/100px-BANDEIRA%20DE%20MONTANHA.jpg',
+  'muniz freire': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Bandeira%20de%20Muniz%20Freire%20%28Esp%C3%ADrito%20Santo%29.png/100px-Bandeira%20de%20Muniz%20Freire%20%28Esp%C3%ADrito%20Santo%29.png',
+  'nova venecia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Bandeira%20de%20Nova%20Ven%C3%A9cia%20%28Esp%C3%ADrito%20Santo%29.png/100px-Bandeira%20de%20Nova%20Ven%C3%A9cia%20%28Esp%C3%ADrito%20Santo%29.png',
+  'pancas': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Bandeira%20de%20Pancas.png/100px-Bandeira%20de%20Pancas.png',
+  'pedro canario': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Pedro%20Can%C3%A1rio.gif/100px-Pedro%20Can%C3%A1rio.gif',
+  'pinheiros': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Bandeira%20de%20Pinheiros%20Esp%C3%ADrito%20Santo.png/100px-Bandeira%20de%20Pinheiros%20Esp%C3%ADrito%20Santo.png',
+  'piuma': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Flag%20of%20Pi%C3%BAma%20ES.png/100px-Flag%20of%20Pi%C3%BAma%20ES.png',
+  'ponto belo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Bandeira%20ponto%20belo.jpg/100px-Bandeira%20ponto%20belo.jpg',
+  'rio bananal': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Bandeira-riobananal.jpg/100px-Bandeira-riobananal.jpg',
+  'rio novo do sul': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Bandeira-rionovodoul.jpg/100px-Bandeira-rionovodoul.jpg',
+  'santa leopoldina': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Bandeira%20do%20munic%C3%ADpio%20de%20Santa%20Leopoldina.jpg/100px-Bandeira%20do%20munic%C3%ADpio%20de%20Santa%20Leopoldina.jpg',
+  'santa maria de jetiba': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Bandeira-stamariadejetiba.jpg/100px-Bandeira-stamariadejetiba.jpg',
+  'santa teresa': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Bandeira%20de%20Santa%20Teresa%20%28Esp%C3%ADrito%20Santo%29.jpg/100px-Bandeira%20de%20Santa%20Teresa%20%28Esp%C3%ADrito%20Santo%29.jpg',
+  'sao domingos do norte': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Bandeira%20de%20S%C3%A3o%20Domingos%20do%20Norte%20Esp%C3%ADrito%20Santo.png/100px-Bandeira%20de%20S%C3%A3o%20Domingos%20do%20Norte%20Esp%C3%ADrito%20Santo.png',
+  'sao gabriel da palha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Bandeira-Sao-Gabriel-da%20Palha.webp/100px-Bandeira-Sao-Gabriel-da%20Palha.webp.jpg',
+  'sao jose do calcado': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Sjc%20bandeira.webp/100px-Sjc%20bandeira.webp.jpg',
+  'sao mateus': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Bandeira-saomateus-es.jpg/100px-Bandeira-saomateus-es.jpg',
+  'serra': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Bandeiradaserra.JPG/100px-Bandeiradaserra.JPG',
+  'sooretama': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Bandeira%20de%20Sooretama%20Esp%C3%ADrito%20Santo.png/100px-Bandeira%20de%20Sooretama%20Esp%C3%ADrito%20Santo.png',
+  'venda nova do imigrante': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Bandeira%20de%20Venda%20Nova%20do%20Imigrante%20%28Esp%C3%ADrito%20Santo%29.png/100px-Bandeira%20de%20Venda%20Nova%20do%20Imigrante%20%28Esp%C3%ADrito%20Santo%29.png',
+  'viana': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Bandeira-viana-es.jpg/100px-Bandeira-viana-es.jpg',
+  'vila valerio': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Bandeira%20de%20Vila%20Val%C3%A9rio%20no%20ES.png/100px-Bandeira%20de%20Vila%20Val%C3%A9rio%20no%20ES.png',
+  'vila velha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Bandeira%20Vila%20Velha.png/100px-Bandeira%20Vila%20Velha.png',
+  'vitoria': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/BandeiraVitoria.png/100px-BandeiraVitoria.png',
+  // Brasão do Estado como fallback
   'estado do espirito santo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg/100px-Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg.png',
   'espirito santo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg/100px-Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg.png',
-  'vitoria': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Bras%C3%A3o_de_Vit%C3%B3ria_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Vit%C3%B3ria_%28Esp%C3%ADrito_Santo%29.png',
-  'serra': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Bras%C3%A3o_da_Serra_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_da_Serra_%28Esp%C3%ADrito_Santo%29.png',
-  'vila velha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Bras%C3%A3o_de_Vila_Velha_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Vila_Velha_%28Esp%C3%ADrito_Santo%29.png',
-  'cariacica': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Coat_of_arms_of_Cariacica_ES.png/100px-Coat_of_arms_of_Cariacica_ES.png',
-  'cachoeiro de itapemirim': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Bras%C3%A3o_Cachoeiro_de_Itapemirim.svg/100px-Bras%C3%A3o_Cachoeiro_de_Itapemirim.svg.png',
-  'linhares': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Bras%C3%A3o_de_Linhares_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Linhares_%28Esp%C3%ADrito_Santo%29.png',
-  'colatina': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Bras%C3%A3o_de_Colatina_ES.png/100px-Bras%C3%A3o_de_Colatina_ES.png',
-  'guarapari': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Bras%C3%A3o_de_Guarapari.png/100px-Bras%C3%A3o_de_Guarapari.png',
-  'sao mateus': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Bras%C3%A3o_de_S%C3%A3o_Mateus_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_S%C3%A3o_Mateus_%28Esp%C3%ADrito_Santo%29.png',
-  'aracruz': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bras%C3%A3o_de_Aracruz_-_ES.svg/100px-Bras%C3%A3o_de_Aracruz_-_ES.svg.png',
-  'viana': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Bras%C3%A3o_de_Viana_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Viana_%28Esp%C3%ADrito_Santo%29.png',
-  'alegre': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Bras%C3%A3o_de_Alegre_ES.png/100px-Bras%C3%A3o_de_Alegre_ES.png',
-  'castelo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Bras%C3%A3o_de_Castelo_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Castelo_%28Esp%C3%ADrito_Santo%29.png',
-  'domingos martins': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Bras%C3%A3o_de_Domingos_Martins_-_ES.svg/100px-Bras%C3%A3o_de_Domingos_Martins_-_ES.svg.png',
-  'santa maria de jetiba': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Bras%C3%A3o_Santa_Maria_de_Jetib%C3%A1.svg/100px-Bras%C3%A3o_Santa_Maria_de_Jetib%C3%A1.svg.png',
-  'venda nova do imigrante': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Bras%C3%A3o_de_Venda_Nova_do_Imigrante_-_ES.svg/100px-Bras%C3%A3o_de_Venda_Nova_do_Imigrante_-_ES.svg.png',
-  'alfredo chaves': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Bras%C3%A3o_de_Alfredo_Chaves_-_ES.svg/100px-Bras%C3%A3o_de_Alfredo_Chaves_-_ES.svg.png',
-  'anchieta': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Bras%C3%A3o_de_Anchieta_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Anchieta_%28Esp%C3%ADrito_Santo%29.png',
-  'fundao': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Bras%C3%A3o_de_Fund%C3%A3o_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Fund%C3%A3o_%28Esp%C3%ADrito_Santo%29.png',
-  'iconha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Bras%C3%A3o_de_Iconha_ES.png/100px-Bras%C3%A3o_de_Iconha_ES.png',
-  'itapemirim': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Bras%C3%A3o_de_Itapemirim.png/100px-Bras%C3%A3o_de_Itapemirim.png',
-  'marataizes': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Bras%C3%A3o_de_Marata%C3%ADzes.png/100px-Bras%C3%A3o_de_Marata%C3%ADzes.png',
-  'santa teresa': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Bras%C3%A3o_de_Santa_Teresa_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Santa_Teresa_%28Esp%C3%ADrito_Santo%29.png',
-  'ibiracu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/Bras%C3%A3o_de_Ibira%C3%A7u_ES.png/100px-Bras%C3%A3o_de_Ibira%C3%A7u_ES.png',
-  'barra de sao francisco': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Bras%C3%A3o_de_Barra_de_S%C3%A3o_Francisco_-_ES.svg/100px-Bras%C3%A3o_de_Barra_de_S%C3%A3o_Francisco_-_ES.svg.png',
-  'nova venecia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Bras%C3%A3o_de_Nova_Ven%C3%A9cia_-_ES.svg/100px-Bras%C3%A3o_de_Nova_Ven%C3%A9cia_-_ES.svg.png',
-  'sao gabriel da palha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Bras%C3%A3o_de_S%C3%A3o_Gabriel_da_Palha_ES.png/100px-Bras%C3%A3o_de_S%C3%A3o_Gabriel_da_Palha_ES.png',
-  'conceicao da barra': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Bras%C3%A3o_de_Concei%C3%A7%C3%A3o_da_Barra_ES.png/100px-Bras%C3%A3o_de_Concei%C3%A7%C3%A3o_da_Barra_ES.png',
-  'pinheiros': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Bras%C3%A3o_de_Pinheiros_-_ES.svg/100px-Bras%C3%A3o_de_Pinheiros_-_ES.svg.png',
-  'baixo guandu': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Bras%C3%A3o_de_Baixo_Guandu.png/100px-Bras%C3%A3o_de_Baixo_Guandu.png',
-  'afonso claudio': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Bras%C3%A3o_de_Afonso_Cl%C3%A1udio_ES.png/100px-Bras%C3%A3o_de_Afonso_Cl%C3%A1udio_ES.png',
-  'santa leopoldina': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Bras%C3%A3o_de_Santa_Leopoldina_%28Esp%C3%ADrito_Santo%29.png/100px-Bras%C3%A3o_de_Santa_Leopoldina_%28Esp%C3%ADrito_Santo%29.png',
-  'ecoporanga': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Bras%C3%A3o_de_Ecoporanga_-_ES.svg/100px-Bras%C3%A3o_de_Ecoporanga_-_ES.svg.png',
-  'guacui': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Bras%C3%A3o_de_Gua%C3%A7u%C3%AD_-_ES.svg/100px-Bras%C3%A3o_de_Gua%C3%A7u%C3%AD_-_ES.svg.png',
-  'iuna': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Bras%C3%A3o_de_I%C3%BAna_-_ES.svg/100px-Bras%C3%A3o_de_I%C3%BAna_-_ES.svg.png',
-  'mimoso do sul': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Bras%C3%A3o_de_Mimoso_do_Sul.png/100px-Bras%C3%A3o_de_Mimoso_do_Sul.png',
-  'muqui': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Bras%C3%A3o_de_Muqui_ES.png/100px-Bras%C3%A3o_de_Muqui_ES.png',
-  'muniz freire': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Bras%C3%A3o_de_Muniz_Freire.png/100px-Bras%C3%A3o_de_Muniz_Freire.png',
-  'joao neiva': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Bras%C3%A3o_de_Jo%C3%A3o_Neiva_ES.png/100px-Bras%C3%A3o_de_Jo%C3%A3o_Neiva_ES.png',
-  'marechal floriano': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Bras%C3%A3o_de_Marechal_Floriano_-_ES.svg/100px-Bras%C3%A3o_de_Marechal_Floriano_-_ES.svg.png',
-  'brejetuba': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Bras%C3%A3o_de_Brejetuba_ES.png/100px-Bras%C3%A3o_de_Brejetuba_ES.png',
-  'sooretama': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Bras%C3%A3o_de_Sooretama_ES.png/100px-Bras%C3%A3o_de_Sooretama_ES.png',
-  'pancas': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Bras%C3%A3o_de_Pancas_-_ES.svg/100px-Bras%C3%A3o_de_Pancas_-_ES.svg.png',
-  'montanha': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Bras%C3%A3o_de_Montanha_-_ES.svg/100px-Bras%C3%A3o_de_Montanha_-_ES.svg.png',
-  'pedro canario': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Bras%C3%A3o_de_Pedro_Can%C3%A1rio_-_ES.svg/100px-Bras%C3%A3o_de_Pedro_Can%C3%A1rio_-_ES.svg.png',
-  'rio bananal': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Bras%C3%A3o_de_Rio_Bananal_-_ES.svg/100px-Bras%C3%A3o_de_Rio_Bananal_-_ES.svg.png',
-  'jaguare': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Bras%C3%A3o_de_Jaguar%C3%A9.png/100px-Bras%C3%A3o_de_Jaguar%C3%A9.png',
-  'vargem alta': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Bras%C3%A3o_de_Vargem_Alta_-_ES.svg/100px-Bras%C3%A3o_de_Vargem_Alta_-_ES.svg.png',
+  'governo do estado': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg/100px-Bras%C3%A3o_do_Esp%C3%ADrito_Santo.svg.png',
 };
 
 /**
@@ -76,12 +96,12 @@ function normalizarNome(nome) {
 }
 
 /**
- * Retorna a URL do brasão de um ente.
+ * Retorna a URL da bandeira/brasão de um ente.
  * @param {string} nome - Nome do ente como aparece nos dados
- * @returns {string|null} URL do brasão ou null se não mapeado
+ * @returns {string|null} URL da imagem ou null se não mapeado
  */
 export function getBrasaoUrl(nome) {
   if (!nome) return null;
   const nomeNorm = normalizarNome(nome);
-  return brasoes[nomeNorm] || null;
+  return bandeiras[nomeNorm] || null;
 }
