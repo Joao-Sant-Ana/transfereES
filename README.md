@@ -1,16 +1,48 @@
-# React + Vite
+# transfereES
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Painel em React + Vite para consulta e visualização de transferências e dados públicos do Espírito Santo.
 
-Currently, two official plugins are available:
+## Stack
+- React 19
+- Vite 7
+- Tailwind CSS 4
+- ESLint 9
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Scripts
+- `npm run dev` — ambiente local
+- `npm run lint` — validação estática
+- `npm run build` — build de produção
+- `npm run preview` — preview local do build
 
-## React Compiler
+## Estrutura principal
+- `src/` — interface, páginas, hooks, serviços e utilitários
+- `public/dados-es.json` — cache de dados utilizado pela aplicação
+- `scripts/generate-cache.js` — rotina de geração/atualização de cache
+- `.github/workflows/update-cache.yml` — atualiza cache periodicamente
+- `.github/workflows/deploy.yml` — publica no GitHub Pages
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Deploy
+O projeto é publicado no GitHub Pages por workflow de CI/CD:
+1. Push em `main` dispara build e deploy.
+2. Atualizações automáticas de cache (`update-cache.yml`) podem disparar novo deploy via `repository_dispatch`.
 
-## Expanding the ESLint configuration
+## Organização para agentes
+Para padronizar contribuições automatizadas:
+- Regras base em `AGENTS.md`.
+- Fluxo operacional em `docs/WORKFLOW_AGENTES.md`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Requisitos
+- Node.js 20+
+- npm 10+
+
+## Desenvolvimento local
+```bash
+npm ci
+npm run dev
+```
+
+## Validação antes de PR
+```bash
+npm run lint
+npm run build
+```
