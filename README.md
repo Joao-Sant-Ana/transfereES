@@ -18,6 +18,7 @@ Painel em React + Vite para consulta e visualização de transferências e dados
 - `src/` — interface, páginas, hooks, serviços e utilitários
 - `public/dados-es.json` — cache de dados utilizado pela aplicação
 - `scripts/generate-cache.js` — rotina de geração/atualização de cache
+- `scripts/generate-entity-images.js` — gera imagens locais dos entes em `public/imagens/entes`
 - `.github/workflows/update-cache.yml` — atualiza cache periodicamente
 - `.github/workflows/deploy.yml` — publica no GitHub Pages
 
