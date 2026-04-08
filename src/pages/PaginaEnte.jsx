@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, Building2, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, BookOpen, Calendar, User, MapPin, Tag } from 'lucide-react';
+import { TrendingUp, Building2, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, BookOpen, Calendar, User, Users, MapPin, Tag, FileText } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { BtnVoltar, Loading } from '../components/ui';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
@@ -130,6 +130,22 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
     return lista.length;
   }, [ente, enteCompleto, ano, areaFiltro, mostrarEfetivadas]);
 
+  // Agrupar planos por parlamentar (útil quando não há executores cadastrados, ex: 2026)
+  const planosPorParlamentar = useMemo(() => {
+    const map = {};
+    planosF.forEach(p => {
+      const parl = p.parlamentar || 'Não informado';
+      if (!map[parl]) {
+        map[parl] = { nome: parl, planos: [], total: 0 };
+      }
+      const valor = mostrarEfetivadas ? (p.valor_efetivado || 0) : p.valor_total;
+      if (mostrarEfetivadas && valor <= 0) return;
+      map[parl].planos.push(p);
+      map[parl].total += valor;
+    });
+    return Object.values(map).filter(p => p.planos.length > 0).sort((a, b) => b.total - a.total);
+  }, [planosF, mostrarEfetivadas]);
+
   const labelPeriodo = ano ? ano : `${anosD[0]}-${anosD[anosD.length - 1]}`;
 
   const nomeExibicao = useMemo(() => {
@@ -140,7 +156,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
   }, [ente.nome]);
 
   const textoNarrativo = useMemo(() => {
-    const tipo = mostrarEfetivadas ? 'liberados' : 'planejados';
+    const tipo = mostrarEfetivadas ? 'repassados' : 'empenhados';
     const partePeriodo = ano ? `Em ${ano}` : `Entre ${labelPeriodo}`;
     const areas = dadosArea.slice(0, 3).map(([f]) => f).join(', ');
 
@@ -193,7 +209,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
               <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
                 <div>
                   <p className="text-teal-200/70 text-xs font-medium mb-1">
-                    Total {mostrarEfetivadas ? 'Liberado' : 'Planejado'} ({labelPeriodo})
+                    Total {mostrarEfetivadas ? 'Repassado' : 'Empenhado'} ({labelPeriodo})
                   </p>
                   <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                     {formatarMoeda(total)}
@@ -204,7 +220,7 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                   className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
                 >
                   {mostrarEfetivadas ? <ToggleRight className="w-5 h-5 text-teal-300" /> : <ToggleLeft className="w-5 h-5 text-slate-400" />}
-                  <span className="text-xs">{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
+                  <span className="text-xs">{mostrarEfetivadas ? 'Ver Empenhado' : 'Ver Repassado'}</span>
                 </button>
               </div>
             </div>
@@ -364,29 +380,25 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
         </div>
       </div>
 
-      {/* Executor Projects - Numbered Blocks */}
-      <Card className="overflow-hidden">
-        <div className="p-4 border-b border-teal-50 bg-gradient-to-r from-teal-50/50 to-white">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-teal-100 rounded-xl">
-              <Building2 className="w-4 h-4 text-teal-600" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-800">Projetos por Executor</h3>
-              <p className="text-xs text-slate-500">
-                {execs.length} projeto(s) encontrado(s)
-                {areaFiltro && ` em ${areaFiltro}`}
-              </p>
+      {/* Executor Projects OR Parliamentary Allocations (when no executors) */}
+      {loading ? (
+        <Card className="p-5"><Loading /></Card>
+      ) : execs.length > 0 ? (
+        <Card className="overflow-hidden">
+          <div className="p-4 border-b border-teal-50 bg-gradient-to-r from-teal-50/50 to-white">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-teal-100 rounded-xl">
+                <Building2 className="w-4 h-4 text-teal-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Projetos por Executor</h3>
+                <p className="text-xs text-slate-500">
+                  {execs.length} projeto(s) encontrado(s)
+                  {areaFiltro && ` em ${areaFiltro}`}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        {loading ? (
-          <Loading />
-        ) : execs.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-sm">
-            Nenhum executor encontrado para este filtro.
-          </div>
-        ) : (
           <div className="divide-y divide-slate-100">
             {execs.map((ex, i) => {
               const sit = getSituacaoTrabalho(ex.situacao_plano_trabalho);
@@ -397,12 +409,9 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                   className="p-4 cursor-pointer group hover:bg-teal-50/30 transition-all"
                 >
                   <div className="flex gap-3">
-                    {/* Large number badge */}
                     <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-teal-500 to-teal-600 text-white rounded-xl flex items-center justify-center font-extrabold text-sm shadow-sm">
                       #{i + 1}
                     </div>
-
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <p className="font-semibold text-slate-800 text-sm leading-snug flex-1 group-hover:text-teal-700 transition-colors">
@@ -410,11 +419,9 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
                         </p>
                         <div className="text-right flex-shrink-0">
                           <p className="text-base font-extrabold text-teal-700">{formatarMoedaCompacta(ex.vT)}</p>
-                          <p className="text-[10px] text-slate-400">{mostrarEfetivadas ? 'liberado' : 'planejado'}</p>
+                          <p className="text-[10px] text-slate-400">{mostrarEfetivadas ? 'repassado' : 'empenhado'}</p>
                         </div>
                       </div>
-
-                      {/* Chips row */}
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
                           <Calendar className="w-3 h-3" />
@@ -445,8 +452,89 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
               );
             })}
           </div>
-        )}
-      </Card>
+        </Card>
+      ) : planosF.length > 0 ? (
+        /* Indicações Parlamentares - quando planos existem mas executores ainda não foram cadastrados */
+        <Card className="overflow-hidden">
+          <div className="p-4 border-b border-teal-50 bg-gradient-to-r from-indigo-50/50 to-white">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-indigo-100 rounded-xl">
+                <Users className="w-4 h-4 text-indigo-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Indicacoes Parlamentares</h3>
+                <p className="text-xs text-slate-500">
+                  {planosF.length} indicacao(oes) de {planosPorParlamentar.length} parlamentar(es)
+                  {areaFiltro && ` em ${areaFiltro}`}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {planosPorParlamentar.map(grupo => (
+              <div key={grupo.nome}>
+                <div className="px-4 py-3 bg-slate-50/50 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="w-3.5 h-3.5 text-indigo-500" />
+                    <span className="text-sm font-bold text-slate-700">{grupo.nome}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm font-extrabold text-indigo-700">{formatarMoedaCompacta(grupo.total)}</span>
+                    <span className="text-xs text-slate-400 ml-1">({grupo.planos.length} plano{grupo.planos.length !== 1 ? 's' : ''})</span>
+                  </div>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {grupo.planos.map((p, i) => {
+                    const valor = mostrarEfetivadas ? (p.valor_efetivado || 0) : p.valor_total;
+                    return (
+                      <div key={p.id || i} className="px-4 py-3 ml-4 hover:bg-teal-50/30 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-1.5">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-700 text-sm">
+                              {p.numero_emenda || p.codigo || 'Emenda sem numero'}
+                            </p>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="font-bold text-teal-700 text-sm">{formatarMoedaCompacta(valor)}</p>
+                            <p className="text-[10px] text-slate-400">{mostrarEfetivadas ? 'repassado' : 'empenhado'}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
+                            <Calendar className="w-3 h-3" />
+                            {p.ano}
+                          </span>
+                          {p.area_politica && p.area_politica !== 'Outros' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs font-medium">
+                              <Tag className="w-3 h-3" />
+                              {p.area_politica}
+                            </span>
+                          )}
+                          <span className={'px-2 py-0.5 rounded-md text-xs font-medium ' + (
+                            p.situacao === 'CIENTE' ? 'bg-emerald-50 text-emerald-700' :
+                            p.situacao === 'IMPEDIDO' ? 'bg-red-50 text-red-700' :
+                            'bg-amber-50 text-amber-700'
+                          )}>
+                            {p.situacao === 'CIENTE' ? 'Ciente' :
+                             p.situacao === 'AGUARDANDO_CIENCIA' ? 'Aguardando Ciencia' :
+                             p.situacao === 'AGUARDANDO_CONCLUSAO_PLANO_TRABALHO' ? 'Aguardando Plano de Trabalho' :
+                             p.situacao === 'IMPEDIDO' ? 'Impedido' :
+                             p.situacao?.replace(/_/g, ' ') || 'Pendente'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-8 text-center text-slate-400 text-sm">
+          Nenhum dado encontrado para este filtro.
+        </Card>
+      )}
     </div>
   );
 }

@@ -21,7 +21,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Generate cache
+      - name: Generate cache and sync to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/generate-cache.js
 
       - name: Check for changes

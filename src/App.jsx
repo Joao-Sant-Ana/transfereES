@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header, Footer } from './components/layout';
 import { Loading, Erro } from './components/ui';
 import { PaginaInicial, PaginaEnte, PaginaParlamentar, PaginaExecutor, TelaAjuda } from './pages';
@@ -14,9 +14,19 @@ export default function App() {
   const [origem, setOrigem] = useState(null);
   const [anoFiltro, setAnoFiltro] = useState(null);
   const [areaFiltro, setAreaFiltro] = useState(null);
-  const [somenteEfetivadas, setSomenteEfetivadas] = useState(true);
+  const [somenteEfetivadas, setSomenteEfetivadas] = useState(null);
 
   const { data, loading, error, refetch } = useApi(fetchDadosAgregados, []);
+
+  // Default inteligente: mostra "Repassado" se maioria dos recursos já foi repassada,
+  // caso contrário mostra "Empenhado" (ex: início de ano, dados novos sem OBs)
+  useEffect(() => {
+    if (data && somenteEfetivadas === null) {
+      const efetivado = data.totalGeralEfetivado || 0;
+      const planejado = data.totalGeral || 0;
+      setSomenteEfetivadas(planejado > 0 && efetivado >= planejado * 0.5);
+    }
+  }, [data, somenteEfetivadas]);
 
   const irEnte = (e) => {
     setEnte(e);
@@ -74,7 +84,7 @@ export default function App() {
       <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-4 w-full">
         {loading && <Loading />}
         {error && <Erro mensagem={error} onRetry={refetch} />}
-        {!loading && !error && data && (
+        {!loading && !error && data && somenteEfetivadas !== null && (
           <>
             {pag === 'inicial' && (
               <PaginaInicial

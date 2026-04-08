@@ -102,17 +102,17 @@ export default function PaginaExecutor({ exec, ente, somenteEfetivadas, onVoltar
               className="flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-700 font-semibold transition-colors"
             >
               {mostrarEfetivadas ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
-              <span>{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
+              <span>{mostrarEfetivadas ? 'Ver Empenhado' : 'Ver Repassado'}</span>
             </button>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
-              <p className="text-xs text-emerald-600 font-medium">Valor Planejado</p>
+              <p className="text-xs text-emerald-600 font-medium">Valor Empenhado</p>
               <p className={'text-xl font-extrabold ' + (!mostrarEfetivadas ? 'text-emerald-700' : 'text-emerald-600/50')}>{formatarMoedaCompacta(valorPlanejado)}</p>
             </div>
             <div className="bg-teal-50 rounded-2xl p-4 border border-teal-100">
-              <p className="text-xs text-teal-600 font-medium">Valor Liberado</p>
+              <p className="text-xs text-teal-600 font-medium">Valor Repassado</p>
               <p className={'text-xl font-extrabold ' + (mostrarEfetivadas ? 'text-teal-700' : 'text-teal-600/50')}>{formatarMoedaCompacta(valorLiberado)}</p>
             </div>
           </div>
