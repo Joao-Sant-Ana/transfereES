@@ -210,8 +210,13 @@ function processarDadosAgregados(planosRaw) {
   const porAno = {};
   const porAnoEstado = {};
   const porAnoMunicipios = {};
+  const porAnoEfetivado = {};
+  const porAnoEstadoEfetivado = {};
+  const porAnoMunicipiosEfetivado = {};
   const porArea = {};
-  const porAreaPorAno = {}; // { ano: { area: valor } }
+  const porAreaPorAno = {};
+  const porAreaEfetivado = {};
+  const porAreaPorAnoEfetivado = {};
 
   const planos = planosRaw.map(processarPlano);
 
@@ -221,6 +226,7 @@ function processarDadosAgregados(planosRaw) {
     const ano = plano.ano;
     const area = plano.area_politica || 'Outros';
     const valor = plano.valor_total;
+    const valorEfetivado = plano.valor_efetivado || 0;
 
     if (!cnpj) return;
 
@@ -235,10 +241,12 @@ function processarDadosAgregados(planosRaw) {
         nome: nome,
         tipo: isEstado ? 'estado' : 'municipio',
         anos: {},
+        anosEfetivados: {},
         planos: []
       };
     }
     porEnte[cnpj].anos[ano] = (porEnte[cnpj].anos[ano] || 0) + valor;
+    porEnte[cnpj].anosEfetivados[ano] = (porEnte[cnpj].anosEfetivados[ano] || 0) + valorEfetivado;
     porEnte[cnpj].planos.push(plano);
 
     // Por parlamentar
@@ -247,35 +255,44 @@ function processarDadosAgregados(planosRaw) {
         porParlamentar[parlamentar] = {
           nome: parlamentar,
           total: 0,
+          totalEfetivado: 0,
           planos: [],
           entes: new Set(),
-          anos: {}
+          anos: {},
+          anosEfetivados: {}
         };
       }
       porParlamentar[parlamentar].total += valor;
+      porParlamentar[parlamentar].totalEfetivado += valorEfetivado;
       porParlamentar[parlamentar].planos.push(plano);
       porParlamentar[parlamentar].entes.add(plano.nome_beneficiario);
       porParlamentar[parlamentar].anos[ano] = (porParlamentar[parlamentar].anos[ano] || 0) + valor;
+      porParlamentar[parlamentar].anosEfetivados[ano] = (porParlamentar[parlamentar].anosEfetivados[ano] || 0) + valorEfetivado;
     }
 
-    // Por ano (total)
+    // Por ano
     porAno[ano] = (porAno[ano] || 0) + valor;
+    porAnoEfetivado[ano] = (porAnoEfetivado[ano] || 0) + valorEfetivado;
 
     // Por ano (estado vs municípios)
     if (isEstado) {
       porAnoEstado[ano] = (porAnoEstado[ano] || 0) + valor;
+      porAnoEstadoEfetivado[ano] = (porAnoEstadoEfetivado[ano] || 0) + valorEfetivado;
     } else {
       porAnoMunicipios[ano] = (porAnoMunicipios[ano] || 0) + valor;
+      porAnoMunicipiosEfetivado[ano] = (porAnoMunicipiosEfetivado[ano] || 0) + valorEfetivado;
     }
 
-    // Por área (total)
+    // Por área
     porArea[area] = (porArea[area] || 0) + valor;
+    porAreaEfetivado[area] = (porAreaEfetivado[area] || 0) + valorEfetivado;
 
     // Por área por ano
-    if (!porAreaPorAno[ano]) {
-      porAreaPorAno[ano] = {};
-    }
+    if (!porAreaPorAno[ano]) porAreaPorAno[ano] = {};
     porAreaPorAno[ano][area] = (porAreaPorAno[ano][area] || 0) + valor;
+
+    if (!porAreaPorAnoEfetivado[ano]) porAreaPorAnoEfetivado[ano] = {};
+    porAreaPorAnoEfetivado[ano][area] = (porAreaPorAnoEfetivado[ano][area] || 0) + valorEfetivado;
   });
 
   // Separar estado dos municípios
@@ -292,6 +309,8 @@ function processarDadosAgregados(planosRaw) {
   // Calcular totais
   const totalEstado = estado ? Object.values(estado.anos).reduce((a, b) => a + b, 0) : 0;
   const totalMunicipios = municipios.reduce((acc, m) => acc + Object.values(m.anos).reduce((a, b) => a + b, 0), 0);
+  const totalEstadoEfetivado = estado ? Object.values(estado.anosEfetivados || {}).reduce((a, b) => a + b, 0) : 0;
+  const totalMunicipiosEfetivado = municipios.reduce((acc, m) => acc + Object.values(m.anosEfetivados || {}).reduce((a, b) => a + b, 0), 0);
 
   return {
     estado,
@@ -302,11 +321,19 @@ function processarDadosAgregados(planosRaw) {
     porAno,
     porAnoEstado,
     porAnoMunicipios,
+    porAnoEfetivado,
+    porAnoEstadoEfetivado,
+    porAnoMunicipiosEfetivado,
     porArea,
     porAreaPorAno,
+    porAreaEfetivado,
+    porAreaPorAnoEfetivado,
     totalEstado,
     totalMunicipios,
-    totalGeral: totalEstado + totalMunicipios
+    totalGeral: totalEstado + totalMunicipios,
+    totalEstadoEfetivado,
+    totalMunicipiosEfetivado,
+    totalGeralEfetivado: totalEstadoEfetivado + totalMunicipiosEfetivado
   };
 }
 
@@ -321,7 +348,8 @@ export async function fetchDadosAgregados() {
 
   // Fallback: buscar da API (mais lento)
   console.log('Carregando dados da API...');
-  const anos = [2020, 2021, 2022, 2023, 2024, 2025, 2026];
+  const anoAtual = new Date().getFullYear();
+  const anos = Array.from({ length: anoAtual - 2020 + 1 }, (_, i) => 2020 + i);
   const todosPlanos = [];
 
   for (const ano of anos) {

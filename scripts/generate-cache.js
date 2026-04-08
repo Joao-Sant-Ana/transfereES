@@ -7,7 +7,9 @@
  */
 
 const BASE_URL = 'https://api.transferegov.gestao.gov.br/transferenciasespeciais';
-const ANOS = [2020, 2021, 2022, 2023, 2024, 2025, 2026];
+const ANO_INICIAL = 2020;
+const ANO_ATUAL = new Date().getFullYear();
+const ANOS = Array.from({ length: ANO_ATUAL - ANO_INICIAL + 1 }, (_, i) => ANO_INICIAL + i);
 
 async function fetchJSON(url) {
   const response = await fetch(url, {
@@ -535,7 +537,8 @@ async function gerarCache() {
   const path = await import('path');
 
   const outputPath = path.join(process.cwd(), 'public', 'dados-es.json');
-  fs.writeFileSync(outputPath, JSON.stringify(dadosCache, null, 2));
+  // Usar JSON compacto (sem indentação) para reduzir tamanho do arquivo (~40% menor)
+  fs.writeFileSync(outputPath, JSON.stringify(dadosCache));
 
   console.log(`\nCache salvo em: ${outputPath}`);
   console.log(`Tamanho: ${(fs.statSync(outputPath).size / 1024 / 1024).toFixed(2)} MB`);

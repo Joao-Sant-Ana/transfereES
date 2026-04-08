@@ -82,10 +82,12 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
       if (mostrarEfetivadas && valorEfetivado <= 0) return;
 
       if (!map[key]) {
+        const nome = plano.nome_beneficiario || 'Nao informado';
+        const isEstado = nome.toUpperCase().includes('ESTADO') || nome.toUpperCase().includes('GOVERNO DO ESTADO');
         map[key] = {
           cnpj: key,
-          nome: plano.nome_beneficiario || 'Nao informado',
-          tipo: (plano.tipo_beneficiario || 'MUNICIPIO').toLowerCase() === 'estado' ? 'estado' : 'municipio',
+          nome,
+          tipo: isEstado ? 'estado' : 'municipio',
           planos: [],
           total: 0
         };
