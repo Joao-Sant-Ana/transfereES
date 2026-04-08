@@ -18,8 +18,8 @@ export default function App() {
 
   const { data, loading, error, refetch } = useApi(fetchDadosAgregados, []);
 
-  // Default inteligente: mostra "Liberado" se maioria dos recursos já foi liberada,
-  // caso contrário mostra "Planejado" (ex: início de ano, dados novos sem OBs)
+  // Default inteligente: mostra "Repassado" se maioria dos recursos já foi repassada,
+  // caso contrário mostra "Empenhado" (ex: início de ano, dados novos sem OBs)
   useEffect(() => {
     if (data && somenteEfetivadas === null) {
       const efetivado = data.totalGeralEfetivado || 0;

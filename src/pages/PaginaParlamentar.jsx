@@ -119,7 +119,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
   }, [parl, ano, areaFiltro, mostrarEfetivadas]);
 
   const textoNarrativo = useMemo(() => {
-    const tipo = mostrarEfetivadas ? 'liberados' : 'planejados';
+    const tipo = mostrarEfetivadas ? 'repassados' : 'empenhados';
     const partePeriodo = ano ? `Em ${ano}` : `Entre ${labelPeriodo}`;
     const areas = dadosArea.slice(0, 3).map(([f]) => f).join(', ');
 
@@ -193,7 +193,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
               <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
                 <div>
                   <p className="text-indigo-200/70 text-xs font-medium mb-1">
-                    Total {mostrarEfetivadas ? 'Liberado' : 'Planejado'} ({labelPeriodo})
+                    Total {mostrarEfetivadas ? 'Repassado' : 'Empenhado'} ({labelPeriodo})
                   </p>
                   <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                     {formatarMoeda(total)}
@@ -204,7 +204,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
                   className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
                 >
                   {mostrarEfetivadas ? <ToggleRight className="w-5 h-5 text-indigo-300" /> : <ToggleLeft className="w-5 h-5 text-slate-400" />}
-                  <span className="text-xs">{mostrarEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
+                  <span className="text-xs">{mostrarEfetivadas ? 'Ver Empenhado' : 'Ver Repassado'}</span>
                 </button>
               </div>
               {/* Estado / Municípios breakdown */}
@@ -476,7 +476,7 @@ export default function PaginaParlamentar({ parl, anoInicial, areaInicial, somen
                                     </p>
                                     <div className="text-right flex-shrink-0">
                                       <p className="font-bold text-indigo-700 text-sm">{formatarMoedaCompacta(ex.vT)}</p>
-                                      <p className="text-[10px] text-slate-400">{mostrarEfetivadas ? 'liberado' : 'planejado'}</p>
+                                      <p className="text-[10px] text-slate-400">{mostrarEfetivadas ? 'repassado' : 'empenhado'}</p>
                                     </div>
                                   </div>
 

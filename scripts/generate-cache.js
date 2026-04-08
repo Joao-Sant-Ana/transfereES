@@ -543,6 +543,36 @@ async function gerarCache() {
   console.log(`\nCache salvo em: ${outputPath}`);
   console.log(`Tamanho: ${(fs.statSync(outputPath).size / 1024 / 1024).toFixed(2)} MB`);
 
+  // Upload para Supabase Storage (CDN para acesso rápido)
+  const SUPABASE_URL = process.env.SUPABASE_URL || 'https://vzkdpresdpszfxyfmdon.supabase.co';
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+  if (SUPABASE_KEY) {
+    console.log('\n=== UPLOAD SUPABASE ===');
+    try {
+      const cacheBuffer = fs.readFileSync(outputPath);
+      const response = await fetch(`${SUPABASE_URL}/storage/v1/object/dados/dados-es.json`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'x-upsert': 'true'
+        },
+        body: cacheBuffer
+      });
+      if (response.ok) {
+        console.log('Upload para Supabase concluído com sucesso!');
+      } else {
+        console.error(`Erro no upload Supabase: HTTP ${response.status}`);
+      }
+    } catch (err) {
+      console.error('Erro ao fazer upload para Supabase:', err.message);
+    }
+  } else {
+    console.log('\nSUPABASE_SERVICE_KEY não definida - pulando upload para Supabase');
+  }
+
   // Estatísticas
   console.log('\n=== ESTATÍSTICAS FINAIS ===');
   console.log(`Total de entes: ${entes.length}`);
@@ -555,8 +585,8 @@ async function gerarCache() {
   console.log(`Total de metas: ${todasMetas.length}`);
   console.log(`\nValores:`);
   console.log(`  - Empenhado: R$ ${(dadosCache.totalGeral / 1e6).toFixed(1)} milhões`);
-  console.log(`  - Efetivado (OB): R$ ${(dadosCache.totalGeralEfetivado / 1e6).toFixed(1)} milhões`);
-  console.log(`  - % Efetivado: ${((dadosCache.totalGeralEfetivado / dadosCache.totalGeral) * 100).toFixed(1)}%`);
+  console.log(`  - Repassado (OB): R$ ${(dadosCache.totalGeralEfetivado / 1e6).toFixed(1)} milhões`);
+  console.log(`  - % Repassado: ${((dadosCache.totalGeralEfetivado / dadosCache.totalGeral) * 100).toFixed(1)}%`);
   console.log('\nCache gerado com sucesso!');
 }
 

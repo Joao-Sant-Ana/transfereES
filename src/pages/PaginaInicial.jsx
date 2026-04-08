@@ -269,7 +269,7 @@ export default function PaginaInicial({
     const periodo = dadosFiltrados.labelPeriodo;
     const numMunicipios = muniF.length;
     const numParl = parlF.length;
-    const tipo = somenteEfetivadas ? 'liberados' : 'planejados';
+    const tipo = somenteEfetivadas ? 'repassados' : 'empenhados';
 
     const partePeriodo = anoFiltro ? `Em ${periodo}` : `Entre ${periodo}`;
 
@@ -318,7 +318,7 @@ export default function PaginaInicial({
             <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
               <div>
                 <p className="text-teal-200/70 text-xs font-medium mb-1">
-                  Total {somenteEfetivadas ? 'Liberado' : 'Planejado'} ({dadosFiltrados.labelPeriodo})
+                  Total {somenteEfetivadas ? 'Repassado' : 'Empenhado'} ({dadosFiltrados.labelPeriodo})
                 </p>
                 <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight animate-fade-in-up">
                   {formatarMoeda(dadosFiltrados.total)}
@@ -327,14 +327,14 @@ export default function PaginaInicial({
               <button
                 onClick={() => onEfetivadosChange && onEfetivadosChange(!somenteEfetivadas)}
                 className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl border border-white/10 text-white text-sm font-medium transition-all"
-                aria-label={somenteEfetivadas ? 'Alternar para valores planejados' : 'Alternar para valores liberados'}
+                aria-label={somenteEfetivadas ? 'Alternar para valores empenhados' : 'Alternar para valores repassados'}
               >
                 {somenteEfetivadas ? (
                   <ToggleRight className="w-5 h-5 text-teal-300" />
                 ) : (
                   <ToggleLeft className="w-5 h-5 text-slate-400" />
                 )}
-                <span className="text-xs">{somenteEfetivadas ? 'Ver Planejado' : 'Ver Liberado'}</span>
+                <span className="text-xs">{somenteEfetivadas ? 'Ver Empenhado' : 'Ver Repassado'}</span>
               </button>
             </div>
             <div className="flex flex-wrap gap-5 pt-3 mt-2 border-t border-white/10">
@@ -585,7 +585,7 @@ export default function PaginaInicial({
             </span>
           )}
           <span className="px-2.5 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full font-semibold">
-            {somenteEfetivadas ? 'Liberados' : 'Planejados'}
+            {somenteEfetivadas ? 'Repassados' : 'Empenhados'}
           </span>
         </div>
       )}

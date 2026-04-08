@@ -1,7 +1,10 @@
-// API TransfereGov - com suporte a cache local
+// API TransfereGov - com suporte a cache Supabase + local
 const BASE_URL = 'https://api.transferegov.gestao.gov.br/transferenciasespeciais';
 
-// URL do cache local (gerado pela GitHub Action)
+// URL do cache no Supabase Storage (CDN, acesso rápido de qualquer rede)
+const SUPABASE_CACHE_URL = 'https://vzkdpresdpszfxyfmdon.supabase.co/storage/v1/object/public/dados/dados-es.json';
+
+// URL do cache local (fallback - GitHub Pages)
 const CACHE_URL = import.meta.env.BASE_URL + 'dados-es.json';
 
 // Proxies CORS para fallback automático
@@ -54,30 +57,42 @@ async function fetchWithAutoProxy(url) {
   throw lastError || new Error('Todos os proxies falharam');
 }
 
-// Buscar dados do cache local (prioritário para carregamento inicial rápido)
+// Processar dados do cache (converter entes de array para Set)
+function processarDadosCache(dados) {
+  if (!dados.estado && (!dados.municipios || dados.municipios.length === 0)) {
+    throw new Error('Cache vazio');
+  }
+  if (dados.parlamentares) {
+    dados.parlamentares = dados.parlamentares.map(p => ({
+      ...p,
+      entes: new Set(p.entes || [])
+    }));
+  }
+  return dados;
+}
+
+// Buscar dados do cache (tenta Supabase CDN primeiro, depois cache local)
 async function fetchDadosDoCache() {
+  // 1. Tentar Supabase Storage (CDN global, acessível de qualquer rede)
+  try {
+    const response = await fetch(SUPABASE_CACHE_URL);
+    if (!response.ok) throw new Error('Supabase indisponível');
+    const dados = await response.json();
+    console.log(`Dados carregados do Supabase (atualizado em: ${dados.atualizadoEm || 'data desconhecida'})`);
+    return processarDadosCache(dados);
+  } catch (err) {
+    console.log('Supabase indisponível, tentando cache local...', err.message);
+  }
+
+  // 2. Fallback: cache local (GitHub Pages)
   try {
     const response = await fetch(CACHE_URL);
-    if (!response.ok) throw new Error('Cache não disponível');
+    if (!response.ok) throw new Error('Cache local não disponível');
     const dados = await response.json();
-
-    // Verificar se o cache tem dados válidos
-    if (!dados.estado && (!dados.municipios || dados.municipios.length === 0)) {
-      throw new Error('Cache vazio');
-    }
-
-    // Converter entes de volta para Set (foi serializado como array)
-    if (dados.parlamentares) {
-      dados.parlamentares = dados.parlamentares.map(p => ({
-        ...p,
-        entes: new Set(p.entes || [])
-      }));
-    }
-
-    console.log(`Dados carregados do cache (atualizado em: ${dados.atualizadoEm || 'data desconhecida'})`);
-    return dados;
+    console.log(`Dados carregados do cache local (atualizado em: ${dados.atualizadoEm || 'data desconhecida'})`);
+    return processarDadosCache(dados);
   } catch (err) {
-    console.log('Cache não disponível, buscando da API...', err.message);
+    console.log('Cache local não disponível, buscando da API...', err.message);
     return null;
   }
 }
