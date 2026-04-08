@@ -321,7 +321,7 @@ export async function fetchDadosAgregados() {
 
   // Fallback: buscar da API (mais lento)
   console.log('Carregando dados da API...');
-  const anos = [2020, 2021, 2022, 2023, 2024, 2025];
+  const anos = [2020, 2021, 2022, 2023, 2024, 2025, 2026];
   const todosPlanos = [];
 
   for (const ano of anos) {
