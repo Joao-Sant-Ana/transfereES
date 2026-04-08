@@ -7,7 +7,7 @@
  */
 
 const BASE_URL = 'https://api.transferegov.gestao.gov.br/transferenciasespeciais';
-const ANOS = [2020, 2021, 2022, 2023, 2024, 2025];
+const ANOS = [2020, 2021, 2022, 2023, 2024, 2025, 2026];
 
 async function fetchJSON(url) {
   const response = await fetch(url, {
