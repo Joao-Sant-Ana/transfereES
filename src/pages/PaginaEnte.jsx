@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { TrendingUp, Building2, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, BookOpen, Calendar, User, Users, MapPin, Tag, FileText } from 'lucide-react';
+import { TrendingUp, Building2, Landmark, Building, ArrowRight, ToggleLeft, ToggleRight, BookOpen, Calendar, User, Users, MapPin, Tag, FileText, Banknote, CreditCard } from 'lucide-react';
 import Card from '../components/ui/Card';
 import { BtnVoltar, Loading } from '../components/ui';
 import { formatarMoeda, formatarMoedaCompacta } from '../utils/formatters';
 import { getSituacaoTrabalho } from '../utils/helpers';
 import { fetchEnteCompleto } from '../services/api';
 import { getBrasaoUrl } from '../utils/entityImages';
+import { getFotoParlamentar } from '../utils/deputyPhotos';
 
 export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfetivadas, onVoltar, onExec }) {
   const [ano, setAno] = useState(anoInicial || null);
@@ -464,70 +465,146 @@ export default function PaginaEnte({ ente, anoInicial, areaInicial, somenteEfeti
               <div>
                 <h3 className="text-sm font-bold text-slate-800">Indicacoes Parlamentares</h3>
                 <p className="text-xs text-slate-500">
-                  {planosF.length} indicacao(oes) de {planosPorParlamentar.length} parlamentar(es)
+                  {planosF.length} emenda(s) de {planosPorParlamentar.length} parlamentar(es)
                   {areaFiltro && ` em ${areaFiltro}`}
                 </p>
               </div>
             </div>
           </div>
           <div className="divide-y divide-slate-100">
-            {planosPorParlamentar.map(grupo => (
-              <div key={grupo.nome}>
-                <div className="px-4 py-3 bg-slate-50/50 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User className="w-3.5 h-3.5 text-indigo-500" />
-                    <span className="text-sm font-bold text-slate-700">{grupo.nome}</span>
+            {planosPorParlamentar.map(grupo => {
+              const fotoParl = getFotoParlamentar(grupo.nome);
+              return (
+                <div key={grupo.nome}>
+                  {/* Header do parlamentar com foto */}
+                  <div className="px-4 py-3 bg-gradient-to-r from-indigo-50/80 to-slate-50/50 flex items-center gap-3">
+                    {fotoParl ? (
+                      <img
+                        src={fotoParl}
+                        alt={grupo.nome}
+                        className="w-10 h-10 rounded-xl object-cover shadow-sm border border-indigo-100 flex-shrink-0"
+                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = ''; }}
+                      />
+                    ) : null}
+                    <div
+                      className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-sm flex-shrink-0"
+                      style={fotoParl ? { display: 'none' } : undefined}
+                    >
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-slate-800">{grupo.nome}</p>
+                      <p className="text-xs text-slate-500">{grupo.planos.length} emenda{grupo.planos.length !== 1 ? 's' : ''}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-base font-extrabold text-indigo-700">{formatarMoedaCompacta(grupo.total)}</p>
+                      <p className="text-[10px] text-slate-400">{mostrarEfetivadas ? 'repassado' : 'empenhado'}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm font-extrabold text-indigo-700">{formatarMoedaCompacta(grupo.total)}</span>
-                    <span className="text-xs text-slate-400 ml-1">({grupo.planos.length} plano{grupo.planos.length !== 1 ? 's' : ''})</span>
-                  </div>
-                </div>
-                <div className="divide-y divide-slate-50">
-                  {grupo.planos.map((p, i) => {
-                    const valor = mostrarEfetivadas ? (p.valor_efetivado || 0) : p.valor_total;
-                    return (
-                      <div key={p.id || i} className="px-4 py-3 ml-4 hover:bg-teal-50/30 transition-colors">
-                        <div className="flex items-start justify-between gap-3 mb-1.5">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-slate-700 text-sm">
-                              {p.numero_emenda || p.codigo || 'Emenda sem numero'}
-                            </p>
+
+                  {/* Cards de emendas */}
+                  <div className="px-4 py-2 space-y-2">
+                    {grupo.planos.map((p, i) => {
+                      const valor = mostrarEfetivadas ? (p.valor_efetivado || 0) : p.valor_total;
+                      const sitLabel = p.situacao === 'CIENTE' ? 'Ciente'
+                        : p.situacao === 'AGUARDANDO_CIENCIA' ? 'Aguardando Ciencia'
+                        : p.situacao === 'AGUARDANDO_CONCLUSAO_PLANO_TRABALHO' ? 'Aguardando Plano de Trabalho'
+                        : p.situacao === 'IMPEDIDO' ? 'Impedido'
+                        : p.situacao?.replace(/_/g, ' ') || 'Pendente';
+                      const sitColor = p.situacao === 'CIENTE' ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : p.situacao === 'IMPEDIDO' ? 'bg-red-50 text-red-700 border-red-200'
+                        : 'bg-amber-50 text-amber-700 border-amber-200';
+
+                      return (
+                        <div key={p.id || i} className="bg-white rounded-xl border border-slate-100 hover:border-indigo-200 hover:shadow-sm transition-all p-3.5">
+                          {/* Linha superior: emenda + valor */}
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <FileText className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+                                <p className="text-sm font-semibold text-slate-800 truncate">
+                                  Emenda {p.numero_emenda || p.codigo}
+                                </p>
+                              </div>
+                              <span className={'inline-flex px-2 py-0.5 rounded-md text-xs font-medium border ' + sitColor}>
+                                {sitLabel}
+                              </span>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              <p className="text-lg font-extrabold text-indigo-700">{formatarMoedaCompacta(valor)}</p>
+                            </div>
                           </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="font-bold text-teal-700 text-sm">{formatarMoedaCompacta(valor)}</p>
-                            <p className="text-[10px] text-slate-400">{mostrarEfetivadas ? 'repassado' : 'empenhado'}</p>
+
+                          {/* Detalhes: custeio + investimento */}
+                          <div className="grid grid-cols-2 gap-2 mb-2">
+                            <div className="bg-slate-50 rounded-lg px-2.5 py-1.5">
+                              <p className="text-[10px] text-slate-400 font-medium">Custeio</p>
+                              <p className="text-xs font-bold text-slate-700">{formatarMoedaCompacta(p.valor_custeio || 0)}</p>
+                            </div>
+                            <div className="bg-slate-50 rounded-lg px-2.5 py-1.5">
+                              <p className="text-[10px] text-slate-400 font-medium">Investimento</p>
+                              <p className="text-xs font-bold text-slate-700">{formatarMoedaCompacta(p.valor_investimento || 0)}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
-                            <Calendar className="w-3 h-3" />
-                            {p.ano}
-                          </span>
-                          {p.area_politica && p.area_politica !== 'Outros' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs font-medium">
-                              <Tag className="w-3 h-3" />
-                              {p.area_politica}
-                            </span>
+
+                          {/* Dados bancários */}
+                          {p.banco && (
+                            <div className="bg-gradient-to-r from-slate-50 to-indigo-50/30 rounded-lg px-2.5 py-2 mb-2">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <Banknote className="w-3 h-3 text-slate-400" />
+                                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Dados Bancarios</p>
+                              </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-0.5">
+                                <div>
+                                  <p className="text-[10px] text-slate-400">Banco</p>
+                                  <p className="text-xs font-medium text-slate-700 truncate">{p.banco}</p>
+                                </div>
+                                {p.agencia && (
+                                  <div>
+                                    <p className="text-[10px] text-slate-400">Agencia</p>
+                                    <p className="text-xs font-medium text-slate-700">{p.agencia}</p>
+                                  </div>
+                                )}
+                                {p.conta && (
+                                  <div>
+                                    <p className="text-[10px] text-slate-400">Conta</p>
+                                    <p className="text-xs font-medium text-slate-700">{p.conta}</p>
+                                  </div>
+                                )}
+                                <div>
+                                  <p className="text-[10px] text-slate-400">Situacao</p>
+                                  <p className="text-xs font-medium text-emerald-600">{p.situacao_conta || 'Ativa'}</p>
+                                </div>
+                              </div>
+                            </div>
                           )}
-                          <span className={'px-2 py-0.5 rounded-md text-xs font-medium ' + (
-                            p.situacao === 'CIENTE' ? 'bg-emerald-50 text-emerald-700' :
-                            p.situacao === 'IMPEDIDO' ? 'bg-red-50 text-red-700' :
-                            'bg-amber-50 text-amber-700'
-                          )}>
-                            {p.situacao === 'CIENTE' ? 'Ciente' :
-                             p.situacao === 'AGUARDANDO_CIENCIA' ? 'Aguardando Ciencia' :
-                             p.situacao === 'AGUARDANDO_CONCLUSAO_PLANO_TRABALHO' ? 'Aguardando Plano de Trabalho' :
-                             p.situacao === 'IMPEDIDO' ? 'Impedido' :
-                             p.situacao?.replace(/_/g, ' ') || 'Pendente'}
-                          </span>
+
+                          {/* Tags: ano + área */}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
+                              <Calendar className="w-3 h-3" />
+                              {p.ano}
+                            </span>
+                            {p.area_politica && p.area_politica !== 'Outros' && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-violet-50 text-violet-700 text-xs font-medium">
+                                <Tag className="w-3 h-3" />
+                                {p.area_politica}
+                              </span>
+                            )}
+                            {!p.banco && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-xs font-medium">
+                                <CreditCard className="w-3 h-3" />
+                                Conta pendente
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       ) : (
