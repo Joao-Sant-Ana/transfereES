@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PerfilTipo {
+  SIGEFES_IMPORTACAO
+  SEFAZ
+  SEP
+  SUBSET_ADMIN
+}
+
+enum StatusValidacao {
+  PENDENTE
+  VALIDADO
+  AJUSTADO
+}
+
+enum StatusHomologacao {
+  EM_ANALISE
+  HOMOLOGADO
+  REJEITADO
+}
+
+model Usuario {
+  id                   String               @id @default(cuid())
+  nome                 String
+  email                String               @unique
+  perfil               PerfilTipo
+  ativo                Boolean              @default(true)
+  criadoEm             DateTime             @default(now())
+  atualizadoEm         DateTime             @updatedAt
+  projecoes            ProjecaoArrecadacao[]
+  pressoes             PressaoAdicional[]
+  validacoes           ValidacaoSetorial[]
+  homologacoes         Homologacao[]
+  logs                 LogAlteracao[]
+  importacoesValidadas ImportacaoSIGEFES[]  @relation("UsuarioValidador")
+  relatorios           RelatorioGerado[]
+}
+
+model Perfil {
+  id        String     @id @default(cuid())
+  nome      PerfilTipo @unique
+  descricao String
+}
+
+model FonteRecurso {
+  id                 String                @id @default(cuid())
+  codigo             String                @unique
+  nome               String
+  grupo              String
+  ativa              Boolean               @default(true)
+  posicoes           PosicaoFinanceira[]
+  projecoes          ProjecaoArrecadacao[]
+  pressoes           PressaoAdicional[]
+}
+
+model PosicaoFinanceira {
+  id             String   @id @default(cuid())
+  dataReferencia DateTime
+  fonteId        String
+  I              Decimal  @db.Decimal(18, 2)
+  II             Decimal  @db.Decimal(18, 2)
+  III            Decimal  @db.Decimal(18, 2)
+  IV             Decimal  @db.Decimal(18, 2)
+  V              Decimal  @db.Decimal(18, 2)
+  VI             Decimal  @db.Decimal(18, 2)
+  VII            Decimal  @db.Decimal(18, 2)
+  VIII           Decimal  @db.Decimal(18, 2)
+  IX             Decimal  @db.Decimal(18, 2)
+  X              Decimal  @db.Decimal(18, 2)
+  XI             Decimal  @db.Decimal(18, 2)
+  XII            Decimal  @db.Decimal(18, 2)
+  criadoEm       DateTime @default(now())
+
+  fonte FonteRecurso @relation(fields: [fonteId], references: [id])
+
+  @@index([dataReferencia, fonteId])
+}
+
+model ImportacaoSIGEFES {
+  id             String            @id @default(cuid())
+  dataPosicao    DateTime
+  nomeArquivo    String
+  hashArquivo    String
+  status         StatusValidacao   @default(PENDENTE)
+  observacao     String?
+  criadoEm       DateTime          @default(now())
+  validadoPorId  String?
+  validadoPor    Usuario?          @relation("UsuarioValidador", fields: [validadoPorId], references: [id])
+}
+
+model ProjecaoArrecadacao {
+  id             String   @id @default(cuid())
+  dataReferencia DateTime
+  fonteId        String
+  valor          Decimal  @db.Decimal(18, 2)
+  justificativa  String
+  usuarioId      String
+  criadoEm       DateTime @default(now())
+
+  fonte   FonteRecurso @relation(fields: [fonteId], references: [id])
+  usuario Usuario      @relation(fields: [usuarioId], references: [id])
+}
+
+model PressaoAdicional {
+  id             String   @id @default(cuid())
+  dataReferencia DateTime
+  fonteId        String
+  valor          Decimal  @db.Decimal(18, 2)
+  descricao      String
+  justificativa  String
+  usuarioId      String
+  criadoEm       DateTime @default(now())
+
+  fonte   FonteRecurso @relation(fields: [fonteId], references: [id])
+  usuario Usuario      @relation(fields: [usuarioId], references: [id])
+}
+
+model ValidacaoSetorial {
+  id             String          @id @default(cuid())
+  dataReferencia DateTime
+  setor          PerfilTipo
+  status         StatusValidacao @default(PENDENTE)
+  observacao     String?
+  usuarioId      String
+  criadoEm       DateTime        @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model Homologacao {
+  id             String            @id @default(cuid())
+  dataReferencia DateTime
+  status         StatusHomologacao @default(EM_ANALISE)
+  observacao     String?
+  usuarioId      String
+  criadoEm       DateTime          @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model LogAlteracao {
+  id            String   @id @default(cuid())
+  entidade      String
+  entidadeId    String
+  campo         String
+  valorAnterior String?
+  valorNovo     String
+  justificativa String
+  usuarioId     String
+  criadoEm      DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+model RelatorioGerado {
+  id             String   @id @default(cuid())
+  dataReferencia DateTime
+  tipo           String
+  formato        String
+  caminhoArquivo String
+  usuarioId      String
+  criadoEm       DateTime @default(now())
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
